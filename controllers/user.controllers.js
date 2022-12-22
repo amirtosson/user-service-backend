@@ -87,7 +87,7 @@ function Login(req,res)
                 );
             } 
             else {
-                res.status(404)
+                res.status(200)
                 res.json({ 
                     "user_id": result[0].user_id,
                     "user_token": result[0].user_token,
