@@ -4,55 +4,55 @@ const mysql = require('mysql2');
 //const userAuthen = require('../config/authorization')
 
 //const mongoUrl = "mongodb://localhost:27017/";
-const Sequelize = require("sequelize");
+//const Sequelize = require("sequelize");
 const db_config = {
-    host:"mysqldb",
-    port:"3407",
-    user:"root",
-    password: "12345678",
-    database: "daphne_db"
-  };
+   host:"mysqldb",
+   port:"3306",
+  user:"root",
+   password: "12345678",
+   database: "daphne_db"
+ };
 
 
-const sequelize = new Sequelize(
-    'daphne_db',
-    'root',
-    '12345678',
+//const sequelize = new Sequelize(
+   // 'daphne_db',
+  //  'root',
+  //  '12345678',
+  //   {
+  //     host: 'mysqldb',
+       //dialect: 'mysql'
+   //  }
+//);
+
+//sequelize.authenticate().then(() => {
+ //   console.log('Connection has been established successfully.');
+ //}).catch((error) => {
+ //   console.error('Unable to connect to the database: ', error);
+ //});
+
+
+ var con;
+function handleDisconnect() {
+    con = mysql.createConnection(db_config);
+     con.connect(function(err) 
+     {            
+         if(err) {                                  
+            console.log('error when connecting to db:', err);
+             setTimeout(handleDisconnect, 2000); 
+         }                                     
+     });                                     
+     con.on('error', function(err) 
      {
-       host: 'mysqldb',
-       dialect: 'mysql'
-     }
-);
+         console.log('db error', err);
+         if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
+            handleDisconnect();                        
+         } else {                                      
+            throw err;                                 
+         }
+     });
+ }
 
-sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
- }).catch((error) => {
-    console.error('Unable to connect to the database: ', error);
- });
-
-
-// var con;
-// function handleDisconnect() {
-//     con = mysql.createConnection(db_config);
-//     con.connect(function(err) 
-//     {            
-//         if(err) {                                  
-//             console.log('error when connecting to db:', err);
-//             setTimeout(handleDisconnect, 2000); 
-//         }                                     
-//     });                                     
-//     con.on('error', function(err) 
-//     {
-//         console.log('db error', err);
-//         if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
-//             handleDisconnect();                        
-//         } else {                                      
-//             throw err;                                 
-//         }
-//     });
-// }
-
-// handleDisconnect();
+handleDisconnect();
 
 
 function Login(req,res)
