@@ -57,14 +57,9 @@ var con;
 
 function Login(req,res)
 { 
-     var query = "SELECT * FROM users"
-     con.query(query, function (err, result, fields) {
-         if (err) console.log(err);
-           else{
-             console.log(result)
-             res.json(result)
-         }
-     })
+
+    console.log(req.body)
+  
      if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
      {
          res.status(401)
