@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  mysqldb:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    volumes:
+      - container-volume:/var/lib/mysql
+      - ./mySqldatabases:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_DATABASE=daphne_db
+      - MYSQL_PASSWORD=12345678
+      - MYSQL_ROOT_PASSWORD=12345678
+    ports:
+      - 3407:3306
+
+  user-authen:
+    depends_on:
+      - mysqldb
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3002"
+
+volumes:
+  container-volume:
