@@ -57,30 +57,6 @@ var con;
 
 function Login(req,res)
 { 
-    // var user = sequelize.define('users', {
-    //     user_id : {
-    //         type : Sequelize.INTEGER,
-    //         primaryKey : true,
-    //         autoIncrement : true
-    //     }
-    // },
-    // {
-    //     tableName: 'users',
-    //     freezeTableName: true
-    // });
-
-
-    // sequelize.authenticate().then(() => {
-    //     user.findAll({
-    //         attributes: ['user_id']
-    //       }).then(res => {
-    //         console.log(res)
-    //     }).catch((error) => {
-    //         console.error('Failed to retrieve data : ', error);
-    //     });
-    //  }).catch((error) => {
-    //     console.error('Unable to connect to the database: ', error);
-    //  });
      var query = "SELECT * FROM users"
      con.query(query, function (err, result, fields) {
          if (err) console.log(err);
@@ -89,32 +65,48 @@ function Login(req,res)
              res.json(result)
          }
      })
-    // if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
-    // {
-    //     res.status(401)
-    //     res.json(
-    //             { 
-    //                 "user_id": 0, 
-    //             }
-    //         );
-    //     return
-    // }
+     if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
+     {
+         res.status(401)
+         res.json(
+                 { 
+                     "user_id": 0, 
+                 }
+             );
+         return
+     }
     
-    // var query = "SELECT * FROM users INNER JOIN group_list ON users.working_group_id = group_list.group_id INNER JOIN roles_list ON users.user_role_id = roles_list.role_id WHERE login_name = " + "\""+req.body.user_name + "\"" + 
-    //             " AND user_pwd = " + "\""+req.body.user_pwd + "\""
-    // try 
-    // {
-    //     con.query(query, function (err, result, fields) {
-    //         if (err) throw err;
-    //         if (result[0] === undefined ) {
-    //             res.status(404)
-    //             res.json(
-    //                 { 
-    //                     "user_id": 0  
-    //                 }
-    //             );
-    //         } 
-    //         else {
+     var query = "SELECT * FROM users INNER JOIN group_list ON users.working_group_id = group_list.group_id INNER JOIN roles_list ON users.user_role_id = roles_list.role_id WHERE login_name = " + "\""+req.body.user_name + "\"" + 
+                 " AND user_pwd = " + "\""+req.body.user_pwd + "\""
+     try 
+     {
+        con.query(query, function (err, result, ) 
+        {
+            if (err) throw err;
+            if (result[0] === undefined ) {
+                res.status(404)
+                res.json(
+                    { 
+                        "user_id": 0  
+                    }
+                );
+            } 
+            else {
+                res.status(404)
+                res.json({ 
+                    "user_id": result[0].user_id,
+                    "user_token": result[0].user_token,
+                    "working_group": result[0].group_name,
+                    "role_name": result[0].role_name,
+                            
+                })
+            }
+        });
+    }
+    catch (error) 
+     { 
+         res.json("Something Wrong");
+     }
     //             if(result[0].user_id>0){
     //                 mongodb.connect(mongoUrl, function(err, db) 
     //                 {
