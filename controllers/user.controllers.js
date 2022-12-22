@@ -6,64 +6,89 @@ const mysql = require('mysql2');
 //const mongoUrl = "mongodb://localhost:27017/";
 const Sequelize = require("sequelize");
 const db_config = {
-    host:"mysqldb",
-    port:"3407",
-    user:"root",
-    password: "12345678",
-    database: "daphne_db"
+    host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
+    port:"3306",
+    user:"admin",
+    password: "26472647",
+    database: "daphne"
   };
 
 
-const sequelize = new Sequelize(
-    'daphne_db',
-    'root',
-    '12345678',
+// const sequelize = new Sequelize(
+//     'daphne',
+//     'admin',
+//     '26472647',
+//      {
+//        host: 'daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com',
+//        dialect: 'mysql'
+//      }
+// );
+
+// sequelize.authenticate().then(() => {
+//     console.log('Connection has been established successfully.');
+//  }).catch((error) => {
+//     console.error('Unable to connect to the database: ', error);
+//  });
+
+
+var con;
+ function handleDisconnect() {
+     con = mysql.createConnection(db_config);
+    con.connect(function(err) 
+     {            
+         if(err) {                                  
+             console.log('error when connecting to db:', err);
+             setTimeout(handleDisconnect, 2000); 
+         }                                     
+    });                                     
+     con.on('error', function(err) 
      {
-       host: 'mysqldb',
-       dialect: 'mysql'
-     }
-);
+         console.log('db error', err);
+         if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
+             handleDisconnect();                        
+         } else {                                      
+             throw err;                                 
+         }
+     });
+ }
 
-sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
- }).catch((error) => {
-    console.error('Unable to connect to the database: ', error);
- });
-
-
-// var con;
-// function handleDisconnect() {
-//     con = mysql.createConnection(db_config);
-//     con.connect(function(err) 
-//     {            
-//         if(err) {                                  
-//             console.log('error when connecting to db:', err);
-//             setTimeout(handleDisconnect, 2000); 
-//         }                                     
-//     });                                     
-//     con.on('error', function(err) 
-//     {
-//         console.log('db error', err);
-//         if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
-//             handleDisconnect();                        
-//         } else {                                      
-//             throw err;                                 
-//         }
-//     });
-// }
-
-// handleDisconnect();
+ handleDisconnect();
 
 
 function Login(req,res)
 { 
-    var query = "SELECT * FROM users"
-    con.query(query, function (err, result, fields) {
-        if (err) console.log(err);
-        else{
-            console.log(result)
-        }
-    })
+    // var user = sequelize.define('users', {
+    //     user_id : {
+    //         type : Sequelize.INTEGER,
+    //         primaryKey : true,
+    //         autoIncrement : true
+    //     }
+    // },
+    // {
+    //     tableName: 'users',
+    //     freezeTableName: true
+    // });
+
+
+    // sequelize.authenticate().then(() => {
+    //     user.findAll({
+    //         attributes: ['user_id']
+    //       }).then(res => {
+    //         console.log(res)
+    //     }).catch((error) => {
+    //         console.error('Failed to retrieve data : ', error);
+    //     });
+    //  }).catch((error) => {
+    //     console.error('Unable to connect to the database: ', error);
+    //  });
+     var query = "SELECT * FROM users"
+     con.query(query, function (err, result, fields) {
+         if (err) console.log(err);
+           else{
+             console.log(result)
+             res.json(result)
+         }
+     })
     // if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
     // {
     //     res.status(401)
