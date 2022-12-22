@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 //const userAuthen = require('../config/authorization')
 
 //const mongoUrl = "mongodb://localhost:27017/";
-const Sequelize = require("sequelize");
+//const Sequelize = require("sequelize");
 const db_config = {
     host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
     port:"3306",
