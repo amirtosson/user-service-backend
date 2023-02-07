@@ -1,9 +1,9 @@
 const mysql = require('mysql2');
-//const mongodb = require('mongodb').MongoClient;
+const mongodb = require('mongodb').MongoClient;
 
 //const userAuthen = require('../config/authorization')
 
-//const mongoUrl = "mongodb://localhost:27017/";
+const mongoUrl = "mongodb://localhost:27017/";
 //const Sequelize = require("sequelize");
 const db_config = {
     host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
@@ -86,17 +86,33 @@ function Login(req,res)
                     }
                 );
             } 
-            else {
-                res.status(200)
-                res.json({ 
-                    "user_id": result[0].user_id,
-                    "user_token": result[0].user_token,
-                    "working_group": result[0].group_name,
-                    "role_name": result[0].role_name,
-                            
-                })
+            else 
+            {
+
+                if(result[0].user_id>0)
+                {
+                    mongodb.connect(mongoUrl, function(err, db) 
+                    {
+                        if (err) throw err;
+                        var daphnedb = db.db("daphne");
+                        var query = {"user_id":result[0].user_id};
+                        daphnedb.collection("users").find(query).toArray(function(err, userData)
+                        {
+                            if (err) throw err;
+                            db.close();
+                            res.status(200)
+                            res.json({ 
+                                "user_id": result[0].user_id,
+                                "user_token": result[0].user_token,
+                                "working_group": result[0].group_name,
+                                "role_name": result[0].role_name,
+                                "user": userData[0]        
+                            })
+                        })
+                    })
+                }
             }
-        });
+        })
     }
     catch (error) 
      { 
