@@ -1,0 +1,29 @@
+[{
+  "_id": {
+    "$oid": "637336062e0f2d81025c0648"
+  },
+  "first_name": "Amir",
+  "last_name": "Tosson",
+  "date_birth": "15.05.1989",
+  "email": "user@domain.com",
+  "organization": "Digital Lab",
+  "position": "Senior data scientist",
+  "department": "Data Science",
+  "location": "Siegen, Germany",
+  "phone_number": "0020202202",
+  "user_id": 47
+},{
+  "_id": {
+    "$oid": "6378b26617c08b38feaa9559"
+  },
+  "first_name": "Thomas",
+  "last_name": "Samy",
+  "date_birth": "15.10.1991",
+  "email": "user@domain.com",
+  "organization": "Digital Lab",
+  "position": "Senior data scientist",
+  "department": "Data Science",
+  "location": "Berlin, Germany",
+  "phone_number": "0020202202",
+  "user_id": 49
+}]
