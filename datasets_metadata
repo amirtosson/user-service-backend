@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "637b82c9a8cfedfdb71ab0fe"
+  },
+  "dataset_doi": "VTJGc2RHVmtYMTlmRStSa1lnVGFPbVdXVnJtQjBWblFpdjNERStoYW1JeWFjZ1EyRmdFQW41ZDROd2c0MUZWYw",
+  "dataset_name": "DS1",
+  "rows_number": 184
+},{
+  "_id": {
+    "$oid": "637ba44e9e0db8e636f8ecda"
+  },
+  "dataset_doi": "VTJGc2RHVmtYMTgzbXRmNndIZWtHbkpleGxXbyttRGYzbTh2ZjM1M3FHd3JrdGRxaCtqSHcvL0lINktiYVJrMA",
+  "dataset_name": "FFF"
+},{
+  "_id": {
+    "$oid": "63808c49d7284ae5a2b8a107"
+  },
+  "dataset_doi": "VTJGc2RHVmtYMS84MlFlVjZGeExzWHFkZFV0U2VzZXdYMFc5bTFJbVJxREp1NXNMVmlJbElEQUQrNDQ3VWtRSA",
+  "dataset_name": "TestDataset6",
+  "rows_number": 150
+}]

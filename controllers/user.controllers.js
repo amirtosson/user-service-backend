@@ -33,21 +33,15 @@ const db_config = {
 //  });
 const dbName = 'daphne';
 
-async function main() {
-    // Use connect method to connect to the server
+async function LoginMongo(user_id) {
     await client.connect();
-    console.log('Connected successfully to server');
     const db = client.db(dbName);
-    const collection = db.collection('users');
-    // the following code examples can be pasted here...
-  
-    var mangoquery = {"user_id":47};
+    var mangoquery = {"user_id":user_id};
     const findResult =  await db.collection("users").find(mangoquery).toArray(function(err, userData)
     {
         console.log(userData)
         return userData;
     })
-
     return findResult;
   }
 
@@ -79,8 +73,6 @@ var con;
 
 function Login(req,res)
 { 
-    console.log(req.body)
-  
      if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
      {
          res.status(401)
@@ -109,10 +101,9 @@ function Login(req,res)
             } 
             else 
             {
-                console.log(result[0].user_id)
                 if(result[0].user_id>0)
                 {
-                    main()
+                    LoginMongo(result[0].user_id)
                     .then(resu =>{
                         res.status(200)
                             res.json({ 

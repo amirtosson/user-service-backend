@@ -10,6 +10,9 @@ app.use(bodyparser.urlencoded({
     extended: false
   }));
 const userRouters = require("./routers/user.routers")
+const datasetsRouters = require("./routers/datasets.routers")
+
 app.use(userRouters)
+app.use(datasetsRouters)
 
 app.listen(3002, () => console.log(`User API listening on port 3002!`));
