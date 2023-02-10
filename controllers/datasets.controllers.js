@@ -2,6 +2,7 @@ const mysql = require('mysql2');
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const multerS3 = require('multer-s3');
+const doi = require('../config/doi')
 //var mongodb = require('mongodb').MongoClient;
 //const fs = require('fs');
 //var glob = require("glob");
@@ -99,18 +100,6 @@ function GetDatasetsByUserId(req,res) {
     }
 }
 
-
-
-
-
-
-
-// const PATH_ATTACHED = '/home/tosson/Desktop/Projects/datasets/attached_files/';
-
-const doi = require('../config/doi')
-// var newDOI = "";
-
-
 const uploadS3 = multer({ storage: AWSBucketStorage })
 
 
@@ -118,16 +107,16 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 
 
 function UploadSingleFile(req,res, next) {
+    handleDisconnect();
     const file = req.file;
     const name_parts = file.originalname.split('+')
     var newDoi = ""
 
     var params = {
-        Bucket: 'daphne-angular',  // Can be your folder name
+        Bucket: 'daphne-angular',
         Key:file.filename
       };
     s3.getSignedUrl('putObject', params, function (err, url) {
-    console.log('The URL is', url.split('?')[0]);
     newDoi = url.split('?')[0]
     var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name, dataset_visibilty_id , datasets_filename, dataset_doi, added_on) VALUES("
     + name_parts[1] +  ","
@@ -139,19 +128,22 @@ function UploadSingleFile(req,res, next) {
     + "\"" +file.filename+ "\""+ "," 
     + "\"" +newDoi+ "\""+ "," 
     + "now());"
-    try {
-             con.query(query, function (err, result, fields) {
-                if (err) {
-                    return res.status(400);
-                }
-                res.status(200);
-                res.json("Uploded");
-                 
-                 });
-         } catch (e) { 
-             console.log(e)
-             res.json("Something Wrong");
-             return res.status(400);
+    try 
+    {
+        con.query(query, function (err, result, fields) 
+        {
+            if (err) {
+                return res.status(400);
+            }
+            res.status(200);
+            res.json("Uploded");
+                
+            });
+    } catch (e) 
+    { 
+        console.log(e)
+        res.json("Something Wrong");
+            
     }
 });
 
