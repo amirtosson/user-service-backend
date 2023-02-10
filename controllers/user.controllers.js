@@ -68,11 +68,13 @@ var con;
      });
  }
 
- handleDisconnect();
 
 
 function Login(req,res)
 { 
+
+    handleDisconnect();
+
      if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
      {
          res.status(401)

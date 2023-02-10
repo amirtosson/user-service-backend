@@ -49,29 +49,27 @@ var con;
 function handleDisconnect() {
     con = mysql.createConnection(db_config);
     con.connect(function(err) 
-     {            
-         if(err) {                                  
-             console.log('error when connecting to db:', err);
-             setTimeout(handleDisconnect, 2000); 
-         }                                     
+    {            
+        if(err) {                                  
+            console.log('error when connecting to db:', err);
+            setTimeout(handleDisconnect, 2000); 
+        }                                     
     });                                     
-     con.on('error', function(err) 
-     {
-         console.log('db error', err);
-         if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
-             handleDisconnect();                        
-         } else {                                      
-             throw err;                                 
-         }
-     });
+    con.on('error', function(err) 
+    {
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
+            handleDisconnect();                        
+        } else {                                      
+            throw err;                                 
+        }
+    });
  }
 
- handleDisconnect();
 
 
 function GetDatasetsByUserId(req,res) {
-
-    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, method_name, structure_name, project_name, added_on, dataset_doi FROM daphne.datasets_list "+
+    handleDisconnect();
+    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, datasets_filename, method_name, structure_name, project_name, added_on, dataset_doi FROM daphne.datasets_list "+
     " INNER JOIN methods_list ON datasets_list.method_id = methods_list.method_id" +
     " INNER JOIN users ON users.user_id = datasets_list.owner_id " +
     " INNER JOIN data_structures_list ON datasets_list.dataset_structure_id = data_structures_list.structure_id" + 
@@ -134,13 +132,14 @@ function UploadSingleFile(req,res, next) {
     s3.getSignedUrl('putObject', params, function (err, url) {
     console.log('The URL is', url.split('?')[0]);
     newDoi = url.split('?')[0]
-    var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name,dataset_visibilty_id , dataset_doi, added_on) VALUES("
+    var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name, dataset_visibilty_id , datasets_filename, dataset_doi, added_on) VALUES("
     + name_parts[1] +  ","
     + "\""+name_parts[2]+  "\""+ ","
     + "\""+name_parts[3]+  "\""+ ","
     + "\"" +name_parts[4]+ "\""+ ","
     + "\"" +name_parts[5]+ "\""+ "," 
     + "\"" +name_parts[6]+ "\""+ "," 
+    + "\"" +file.filename+ "\""+ "," 
     + "\"" +newDoi+ "\""+ "," 
     + "now());"
     console.log(query);
