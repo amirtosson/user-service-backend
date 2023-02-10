@@ -119,11 +119,8 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 
 function UploadSingleFile(req,res, next) {
     const file = req.file;
-    console.log(file.originalname)
-    console.log(file.filename)
     const name_parts = file.originalname.split('+')
     var newDoi = ""
-
 
     var params = {
         Bucket: 'daphne-angular',  // Can be your folder name
@@ -142,13 +139,14 @@ function UploadSingleFile(req,res, next) {
     + "\"" +file.filename+ "\""+ "," 
     + "\"" +newDoi+ "\""+ "," 
     + "now());"
-    console.log(query);
     try {
              con.query(query, function (err, result, fields) {
-                 if (err) {
+                if (err) {
                     return res.status(400);
-                 }
-                 return res.status(200);
+                }
+                res.status(200);
+                res.json("Uploded");
+                 
                  });
          } catch (e) { 
              console.log(e)
