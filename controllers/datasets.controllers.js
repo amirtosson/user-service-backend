@@ -66,6 +66,7 @@ function handleDisconnect() {
     });
  }
 
+handleDisconnect();
 
 
 function GetDatasetsByUserId(req,res) {

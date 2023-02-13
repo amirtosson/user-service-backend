@@ -67,6 +67,7 @@ var con;
          }
      });
  }
+handleDisconnect();
 
 
 
