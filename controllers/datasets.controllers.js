@@ -3,16 +3,43 @@ const multer = require('multer');
 const AWS = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const doi = require('../config/doi')
+const mongodb = require('mongodb').MongoClient;
+const { MongoClient } = require('mongodb');
+
 //var mongodb = require('mongodb').MongoClient;
 //const fs = require('fs');
 //var glob = require("glob");
 //const { all } = require('../routers/user.routers');
 
 var mongoUrl = "mongodb://localhost:27017/";
-// const PATH_ATTACHED = '/home/tosson/Desktop/Projects/datasets/attached_files/';
-// options = {
-//     cwd: PATH_ATTACHED
-// }
+const client = new MongoClient(mongoUrl);
+const dbName = 'daphne';
+
+
+
+// ======================MongoDB function ========================
+async function MongoAddDataset(dataset_doi, dataset_name) {
+    await client.connect();
+    const db = client.db(dbName);
+    var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name};
+
+    const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
+        console.log(userData)
+        return userData;
+    })
+    return AddResult;
+  }
+
+async function MongoGetMetadataByDatasetDoi(dataset_doi) {
+    await client.connect();
+    const db = client.db(dbName);
+    var mangoquery = {"dataset_doi":dataset_doi};
+    const findResult =  await db.collection("datasets_metadata").find(mangoquery).toArray(function(err, res) {
+        return userData;
+    })
+    return findResult;
+}
+
 
 const s3 = new AWS.S3({
     accessKeyId: "AKIA6ENB2UFPJAG7WPEL",
@@ -20,16 +47,12 @@ const s3 = new AWS.S3({
     region:"eu-central-1"
   });
   
-
-
 let AWSBucketStorage = multerS3({
     acl: 'public-read',
     s3,
     bucket: 'daphne-angular',
     key: function(req, file, cb) {
         newDOI = doi.GenerateNewDatasetDOI(file.originalname)
-        console.log(file)
-        
         const names= file.originalname.split('+')
         file.filename  = names[names.length -1];
         cb(null,names[names.length -1]);
@@ -107,19 +130,20 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 
 
 
-function UploadSingleFile(req,res, next) {
+function UploadSingleFile(req,res, next) 
+{
     handleDisconnect();
     const file = req.file;
     const name_parts = file.originalname.split('+')
-    var newDoi = ""
-
+    var PID = ""
+    var DOI = doi.GenerateNewDatasetDOI(file.originalname)
     var params = {
         Bucket: 'daphne-angular',
         Key:file.filename
       };
     s3.getSignedUrl('putObject', params, function (err, url) {
-    newDoi = url.split('?')[0]
-    var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name, dataset_visibilty_id , datasets_filename, dataset_doi, added_on) VALUES("
+    PID = url.split('?')[0]
+    var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name, dataset_visibilty_id , datasets_filename, dataset_pid, dataset_doi,added_on) VALUES("
     + name_parts[1] +  ","
     + "\""+name_parts[2]+  "\""+ ","
     + "\""+name_parts[3]+  "\""+ ","
@@ -127,7 +151,8 @@ function UploadSingleFile(req,res, next) {
     + "\"" +name_parts[5]+ "\""+ "," 
     + "\"" +name_parts[6]+ "\""+ "," 
     + "\"" +file.filename+ "\""+ "," 
-    + "\"" +newDoi+ "\""+ "," 
+    + "\"" +PID+ "\""+ "," 
+    + "\"" +DOI+ "\""+ "," 
     + "now());"
     try 
     {
@@ -136,9 +161,11 @@ function UploadSingleFile(req,res, next) {
             if (err) {
                 return res.status(400);
             }
-            res.status(200);
-            res.json("Uploded");
-                
+            MongoAddDataset(DOI, name_parts[5])
+            .then(resu=>{
+                res.status(200);
+                res.json(resu);
+            })            
             });
     } catch (e) 
     { 
@@ -146,39 +173,21 @@ function UploadSingleFile(req,res, next) {
         res.json("Something Wrong");
             
     }
-});
+    });
+    return res.status(200);
+}
+
+function GetMetadataByDatasetDoi(req,res){
+    
+    MongoGetMetadataByDatasetDoi(req.headers.dataset_doi)
+    .then(resu =>{
+        res.status(200)
+        res.json(resu[0])
+    }) 
+ }
 
 
 
-
-
-    // if (!file) {
-    // const error = new Error('No File')
-    // error.httpStatusCode = 400
-    // return next(error)
-    // }
-    // const name_parts = file.originalname.split('_')
-    // const newDoi = req.file.filename
-    // var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name,dataset_visibilty_id , dataset_doi, added_on) VALUES("
-    // + name_parts[1] +  ","
-    // + "\""+name_parts[2]+  "\""+ ","
-    // + "\""+name_parts[3]+  "\""+ ","
-    // + "\"" +name_parts[4]+ "\""+ ","
-    // + "\"" +name_parts[5]+ "\""+ "," 
-    // + "\"" +name_parts[6]+ "\""+ "," 
-    // + "\"" +newDoi+ "\""+ "," 
-    // + "now());"
-    // try {
-    //     con.query(query, function (err, result, fields) {
-    //         if (err) {
-    //             console.log(err)
-    //         }
-    //         });
-    // } catch (e) { 
-    //     console.log(e)
-    //     res.json("Something Wrong");
-    //     return res.status(400);
-    // }
 
     //  mongodb.connect(mongoUrl, function(err, db) {
     //      if (err) throw err;
@@ -190,9 +199,21 @@ function UploadSingleFile(req,res, next) {
     //      });
     //    });
     //  res.json(newDoi);
-     return res.status(200);
- }
 
+
+ // function GetMetadataByDatasetDoi(req,res){
+//     mongodb.connect(mongoUrl, function(err, db) 
+//     {
+//         if (err) throw err;
+//         var dbo = db.db("daphne");
+//         var query = { dataset_doi: req.headers.dataset_doi };
+//         dbo.collection("datasets_metadata").findOne(query, function(err, result) {
+//           if (err) throw err;
+//           db.close();
+//           res.json(result)
+//         });
+//     });
+// }
 
 
 // var attaced_file = {
@@ -381,8 +402,8 @@ module.exports =
     UploadSingleFile, 
     //SaveAttachedFile,
     GetDatasetsByUserId,
-    uploadS3
-    //GetMetadataByDatasetDoi, 
+    uploadS3, 
+    GetMetadataByDatasetDoi, 
     //AddMetadataItem, 
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 

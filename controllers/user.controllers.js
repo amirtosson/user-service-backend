@@ -69,8 +69,6 @@ var con;
  }
 handleDisconnect();
 
-
-
 function Login(req,res)
 { 
 
@@ -125,38 +123,6 @@ function Login(req,res)
      { 
          res.json("Something Wrong");
      }
-    //             if(result[0].user_id>0){
-    //                 mongodb.connect(mongoUrl, function(err, db) 
-    //                 {
-    //                     if (err) throw err;
-    //                     var daphnedb = db.db("daphne");
-    //                     var query = {"user_id":result[0].user_id};
-    //                     daphnedb.collection("users").find(query).toArray(function(err, userData)
-    //                     {
-    //                         if (err) throw err;
-    //                         db.close();
-    //                         res.status(200)
-    //                         res.json
-    //                         (
-    //                             { 
-    //                                 "user_id": result[0].user_id,
-    //                                 "user_token": result[0].user_token,
-    //                                 "working_group": result[0].group_name,
-    //                                 "role_name": result[0].role_name,
-    //                                 "user": userData[0]          
-    //                             }
-    //                         );
-    //                     })
-    //                 })
-
-    //             }
-    //         }
-    //     });
-    // } 
-    // catch (error) 
-    // { 
-    //     res.json("Something Wrong");
-    // }
 }
 
 function SignUp(req,res)

@@ -13,7 +13,7 @@ router.post('/uploadfile', datasetCtrl.uploadS3.single('file'), datasetCtrl.Uplo
 // router.get('/getattachedfilesbydoi', datasetCtrl.GetAttachedFilesByDatasetDoi);
 
 // router.post('/addmetadataitem', datasetCtrl.AddMetadataItem);
-// router.get('/getmetadatabydoi', datasetCtrl.GetMetadataByDatasetDoi);
+router.get('/getmetadatabydoi', datasetCtrl.GetMetadataByDatasetDoi);
 // router.get('/getdatasetactivites', datasetCtrl.GetDatasetActivitiesByDoi);
 // router.post('/insertdatasetactivity', datasetCtrl.AddDatasetActivity);
 router.get('/getdatasetsbyuserid', datasetCtrl.GetDatasetsByUserId);
