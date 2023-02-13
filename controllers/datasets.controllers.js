@@ -34,13 +34,26 @@ async function MongoGetMetadataByDatasetDoi(dataset_doi) {
     await client.connect();
     const db = client.db(dbName);
     var mangoquery = {"dataset_doi":dataset_doi};
-    const findResult =  await db.collection("datasets_metadata").find(mangoquery).toArray(function(err, res) {
-        return userData;
+    const findResult =  await db.collection("datasets_metadata").find(mangoquery).toArray(function(err, resData) {
+        return resData;
     })
     return findResult;
 }
 
+async function MongoAddMetadataItem(item_name, item_value, dataset_doi) {
+    await client.connect();
+    const db = client.db(dbName);
+    var obj = {}
+    obj[item_name]= item_value
+    var newvalues = { $set: obj};
+    var mangoquery = {"dataset_doi":dataset_doi};
+    const findResult =  await db.collection("datasets_metadata").updateOne(mangoquery, newvalues,function(err, resData) {
+        return resData;
+    })
+    return findResult;
+}
 
+// ========================= AWS-bucket Config and function ====================================
 const s3 = new AWS.S3({
     accessKeyId: "AKIA6ENB2UFPJAG7WPEL",
     secretAccessKey: "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",
@@ -59,7 +72,7 @@ let AWSBucketStorage = multerS3({
      }
     })
 
-
+// ============================== Mysql config and connection handling ==============================
 const db_config = {
     host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
     port:"3306",
@@ -91,6 +104,7 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+// ====================================== Main APIS========================================
 
 function GetDatasetsByUserId(req,res) {
     handleDisconnect();
@@ -125,10 +139,6 @@ function GetDatasetsByUserId(req,res) {
 }
 
 const uploadS3 = multer({ storage: AWSBucketStorage })
-
-
-
-
 
 function UploadSingleFile(req,res, next) 
 {
@@ -186,7 +196,32 @@ function GetMetadataByDatasetDoi(req,res){
     }) 
  }
 
-
+function AddMetadataItem(req,res){
+    MongoAddMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
+    .then(
+        resu =>{
+            res.status(200)
+            res.json(resu)
+        }
+    )
+   // mongodb.connect(mongoUrl, function(err, db) 
+//     {
+//         if (err) throw err;
+//         var dbo = db.db("daphne");
+//         var query = { dataset_doi: req.headers.dataset_doi };
+//         var val = req.body.value
+//         var keyN = req.body.key
+//         var obj = {}
+//         obj[keyN]= val
+//         var newvalues = { $set: obj};
+//         dbo.collection("datasets_metadata").updateOne(query, newvalues, function(err, result) {
+//           if (err) throw err;
+//           db.close();
+//           res.json(result)
+//         });
+//     });
+ }
+    
 
 
     //  mongodb.connect(mongoUrl, function(err, db) {
@@ -404,7 +439,7 @@ module.exports =
     GetDatasetsByUserId,
     uploadS3, 
     GetMetadataByDatasetDoi, 
-    //AddMetadataItem, 
+    AddMetadataItem, 
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
     //GetAttachedFilesByDatasetDoi
