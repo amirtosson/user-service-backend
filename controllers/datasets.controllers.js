@@ -108,7 +108,7 @@ handleDisconnect();
 
 function GetDatasetsByUserId(req,res) {
     handleDisconnect();
-    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, datasets_filename, method_name, structure_name, project_name, added_on, dataset_doi FROM daphne.datasets_list "+
+    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, datasets_filename, method_name, structure_name, project_name, added_on, dataset_doi, dataset_pid FROM daphne.datasets_list "+
     " INNER JOIN methods_list ON datasets_list.method_id = methods_list.method_id" +
     " INNER JOIN users ON users.user_id = datasets_list.owner_id " +
     " INNER JOIN data_structures_list ON datasets_list.dataset_structure_id = data_structures_list.structure_id" + 
