@@ -83,7 +83,8 @@ const db_config = {
 
 
 var con;
-function handleDisconnect() {
+function handleDisconnect() 
+{
     con = mysql.createConnection(db_config);
     con.connect(function(err) 
     {            
@@ -102,12 +103,11 @@ function handleDisconnect() {
     });
  }
 
-handleDisconnect();
+//handleDisconnect();
 
 // ====================================== Main APIS========================================
 
 function GetDatasetsByUserId(req,res) {
-    handleDisconnect();
     var query = "SELECT dataset_id, owner_id, login_name , dataset_name, datasets_filename, method_name, structure_name, project_name, added_on, dataset_doi, dataset_pid FROM daphne.datasets_list "+
     " INNER JOIN methods_list ON datasets_list.method_id = methods_list.method_id" +
     " INNER JOIN users ON users.user_id = datasets_list.owner_id " +
@@ -117,24 +117,27 @@ function GetDatasetsByUserId(req,res) {
     " OR dataset_visibilty_id = 1;";
     try 
     {
+        handleDisconnect();
         con.query(query, function (err, result) {
             if (err) throw err;
             if (result[0] === undefined ) {
                 res.status(404)
-                res.json(
+                return res.json(
                     { 
                         "error": 'No Datasets'  
                     }
                 );
             } 
             else {
-                res.json(result)
+                con.end()
+                return res.json(result)
             }
         })
     }
     catch (error) 
-    { 
-        res.json("Something Wrong");
+    {   
+        console.log(error)
+        return res.json("Something Wrong");
     }
 }
 
@@ -142,7 +145,6 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 
 function UploadSingleFile(req,res, next) 
 {
-    handleDisconnect();
     const file = req.file;
     const name_parts = file.originalname.split('+')
     var PID = ""
@@ -166,6 +168,7 @@ function UploadSingleFile(req,res, next)
     + "now());"
     try 
     {
+        handleDisconnect();
         con.query(query, function (err, result, fields) 
         {
             if (err) {
@@ -173,15 +176,14 @@ function UploadSingleFile(req,res, next)
             }
             MongoAddDataset(DOI, name_parts[5])
             .then(resu=>{
+                con.end()
                 res.status(200);
-                res.json(resu);
+                return res.json(resu);
             })            
             });
     } catch (e) 
     { 
-        console.log(e)
-        res.json("Something Wrong");
-            
+        return res.json("Something Wrong");   
     }
     });
     return res.status(200);
@@ -192,7 +194,7 @@ function GetMetadataByDatasetDoi(req,res){
     MongoGetMetadataByDatasetDoi(req.headers.dataset_doi)
     .then(resu =>{
         res.status(200)
-        res.json(resu[0])
+        return res.json(resu[0])
     }) 
  }
 
@@ -201,25 +203,9 @@ function AddMetadataItem(req,res){
     .then(
         resu =>{
             res.status(200)
-            res.json(resu)
+            return res.json(resu)
         }
     )
-   // mongodb.connect(mongoUrl, function(err, db) 
-//     {
-//         if (err) throw err;
-//         var dbo = db.db("daphne");
-//         var query = { dataset_doi: req.headers.dataset_doi };
-//         var val = req.body.value
-//         var keyN = req.body.key
-//         var obj = {}
-//         obj[keyN]= val
-//         var newvalues = { $set: obj};
-//         dbo.collection("datasets_metadata").updateOne(query, newvalues, function(err, result) {
-//           if (err) throw err;
-//           db.close();
-//           res.json(result)
-//         });
-//     });
  }
     
 

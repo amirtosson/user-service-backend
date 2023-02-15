@@ -67,34 +67,31 @@ var con;
          }
      });
  }
-handleDisconnect();
+//handleDisconnect();
 
 function Login(req,res)
 { 
-
-    handleDisconnect();
-
      if (req.body.user_name === undefined || req.body.user_pwd === undefined) 
      {
          res.status(401)
-         res.json(
+        return res.json(
                  { 
                      "user_id": 0, 
                  }
              );
-         return
      }
     
      var query = "SELECT * FROM users INNER JOIN group_list ON users.working_group_id = group_list.group_id INNER JOIN roles_list ON users.user_role_id = roles_list.role_id WHERE login_name = " + "\""+req.body.user_name + "\"" + 
                  " AND user_pwd = " + "\""+req.body.user_pwd + "\""
      try 
      {
+        handleDisconnect();
         con.query(query, function (err, result, ) 
         {
             if (err) throw err;
             if (result[0] === undefined ) {
                 res.status(404)
-                res.json(
+                return res.json(
                     { 
                         "user_id": 0  
                     }
@@ -106,14 +103,15 @@ function Login(req,res)
                 {
                     LoginMongo(result[0].user_id)
                     .then(resu =>{
+                        con.end()
                         res.status(200)
-                            res.json({ 
-                                "user_id": result[0].user_id,
-                                "user_token": result[0].user_token,
-                                "working_group": result[0].group_name,
-                                "role_name": result[0].role_name,
-                                "user": resu[0]        
-                            })
+                        return res.json({ 
+                            "user_id": result[0].user_id,
+                            "user_token": result[0].user_token,
+                            "working_group": result[0].group_name,
+                            "role_name": result[0].role_name,
+                            "user": resu[0]        
+                        })
                     })
                 }
             }
@@ -121,7 +119,8 @@ function Login(req,res)
     }
     catch (error) 
      { 
-         res.json("Something Wrong");
+        console.log(error)
+        return res.json("Something Wrong");
      }
 }
 
