@@ -17,15 +17,15 @@ const dbName = 'daphne';
 
 
 
-// ======================MongoDB function ========================
+// ======================MongoDB functions ========================
 async function MongoAddDataset(dataset_doi, dataset_name) {
     await client.connect();
     const db = client.db(dbName);
     var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name};
 
     const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
-        console.log(userData)
-        return userData;
+        console.log(res)
+        return res;
     })
     return AddResult;
   }
@@ -39,6 +39,17 @@ async function MongoGetMetadataByDatasetDoi(dataset_doi) {
     })
     return findResult;
 }
+
+async function MongoDeletedataByDatasetDoi(dataset_doi) {
+    await client.connect();
+    const db = client.db(dbName);
+    var mangoquery = {"dataset_doi":dataset_doi};
+    const deleteResult =  await db.collection("datasets_metadata").deleteOne(mangoquery, function(err, resData) {
+        return resData;
+    })
+    return deleteResult;
+}
+
 
 async function MongoAddMetadataItem(item_name, item_value, dataset_doi) {
     await client.connect();
@@ -121,6 +132,7 @@ function GetDatasetsByUserId(req,res) {
         con.query(query, function (err, result) {
             if (err) throw err;
             if (result[0] === undefined ) {
+                con.end()
                 res.status(404)
                 return res.json(
                     { 
@@ -136,8 +148,9 @@ function GetDatasetsByUserId(req,res) {
     }
     catch (error) 
     {   
+        con.end()
         console.log(error)
-        return res.json("Something Wrong");
+        return res.json(error);
     }
 }
 
@@ -208,7 +221,55 @@ function AddMetadataItem(req,res){
     )
  }
     
+function DeleteDatasetByDOI(req, res) {
+    var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
+    try 
+    {
+        handleDisconnect();
+        con.query(query, function (err, result, fields) 
+        {
+            console.log("result")
+            if (err) {
+                return res.json(err);
+            }
+            MongoDeletedataByDatasetDoi(req.body.dataset_doi)
+            .then(resu=>{
+                con.end()
+                if (resu.deletedCount > 0)
+                {
+                    var params = 
+                    {
+                        Bucket:  'daphne-angular',
+                        Key: req.body.original_file_name
+                    };
+                      
+                    s3.deleteObject(params, function(err, data) {
+                        if (err) 
+                        {                    
+                            res.status(400);
+                            return res.json(err.stack) 
+                        } // an error occurred
+                        else{
+                            res.status(200);
+                            return res.json(data);
+                        }       
+                    })
+                }
+                else{
+                    res.status(400);
+                    return res.json("Something wrong") 
+                }
+                res.status(200);
 
+                return res.json(resu);
+            })            
+        });
+    } catch (e) 
+    { 
+        return res.json("Something Wrong");   
+    }
+    return res.status(200);
+}
 
     //  mongodb.connect(mongoUrl, function(err, db) {
     //      if (err) throw err;
@@ -422,6 +483,7 @@ module.exports =
 { 
     UploadSingleFile, 
     //SaveAttachedFile,
+    DeleteDatasetByDOI,
     GetDatasetsByUserId,
     uploadS3, 
     GetMetadataByDatasetDoi, 

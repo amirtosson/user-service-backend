@@ -7,11 +7,11 @@ const multerS3 = require('multer-s3');
 
 const PATH_RAW = '/home/tosson/Desktop/Projects/datasets/rawdatasets/';
 const datasetCtrl = require('../controllers/datasets.controllers');
-
 router.post('/uploadfile', datasetCtrl.uploadS3.single('file'), datasetCtrl.UploadSingleFile);
+
 // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);
 // router.get('/getattachedfilesbydoi', datasetCtrl.GetAttachedFilesByDatasetDoi);
-
+router.post('/deletedatasetbydoi', datasetCtrl.DeleteDatasetByDOI);
 router.post('/addmetadataitem', datasetCtrl.AddMetadataItem);
 router.get('/getmetadatabydoi', datasetCtrl.GetMetadataByDatasetDoi);
 // router.get('/getdatasetactivites', datasetCtrl.GetDatasetActivitiesByDoi);

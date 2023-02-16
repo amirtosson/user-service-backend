@@ -1,19 +1,15 @@
 const mysql = require('mysql2');
 const mongodb = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
-//const userAuthen = require('../config/authorization')
+const userAuthen = require('../config/authorization')
 
 const mongoUrl = 'mongodb://localhost:27017';
+const dbName = 'daphne';
+
 const client = new MongoClient(mongoUrl);
 
 //const Sequelize = require("sequelize");
-const db_config = {
-    host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
-    port:"3306",
-    user:"admin",
-    password: "26472647",
-    database: "daphne"
-  };
+
 
 
 // const sequelize = new Sequelize(
@@ -31,22 +27,55 @@ const db_config = {
 //  }).catch((error) => {
 //     console.error('Unable to connect to the database: ', error);
 //  });
-const dbName = 'daphne';
 
-async function LoginMongo(user_id) {
+// ======================MongoDB functions ========================
+
+async function LoginMongo(user_id) 
+{
     await client.connect();
     const db = client.db(dbName);
     var mangoquery = {"user_id":user_id};
     const findResult =  await db.collection("users").find(mangoquery).toArray(function(err, userData)
     {
-        console.log(userData)
         return userData;
     })
     return findResult;
-  }
+}
 
 
+async function SignUpMongo(first_name_, last_name_, date_birth_, email_, organization_, 
+                    position_, department_, location_, phone_number_, user_id_){
 
+    await client.connect();
+    const db = client.db(dbName);
+    var newUser = 
+    { 
+        first_name: first_name_, 
+        last_name: last_name_, 
+        date_birth: date_birth_,
+        email: email_,
+        organization: organization_,
+        position: position_,
+        department: department_,
+        location: location_,
+        phone_number: phone_number_,
+        user_id: user_id_
+    };
+    const AddResult = await db.collection("users").insertOne(newUser, function(err, ress) {
+        return ress;
+    })
+    return AddResult;
+}
+// ============================== Mysql config and connection handling ==============================
+
+const db_config = 
+{
+    host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
+    port:"3306",
+    user:"admin",
+    password: "26472647",
+    database: "daphne"
+};
 var con;
  function handleDisconnect() {
      con = mysql.createConnection(db_config);
@@ -132,12 +161,12 @@ function SignUp(req,res)
     || req.body.working_group_id < 1) 
     {
         res.status(401)
-        res.json(
+        return res.json(
                 { 
                     "user_id": 0, 
                 }
             );
-        return
+        
     }
     const newToken = userAuthen.GenerateNewToken(req.body)
     var query = "INSERT INTO users(login_name, user_pwd, user_role_id, user_token , working_group_id) VALUES("
@@ -148,50 +177,39 @@ function SignUp(req,res)
     + "\""+ req.body.working_group_id +  "\""+");" 
     try 
     {
+        handleDisconnect();
         con.query(query, function (err, result, fields)   
         {
             if (err == null && result.insertId > 0) {
                 try {
-                    mongodb.connect(mongoUrl, function(err, db){
-                        if (err) console.log(err);
-                        var daphnedb = db.db("daphne");
-                        var newUser = 
-                        { 
-                            first_name: req.body.first_name, 
-                            last_name: req.body.last_name, 
-                            date_birth: req.body.date_birth,
-                            email: req.body.email,
-                            organization: req.body.organization,
-                            position: req.body.position,
-                            department: req.body.department,
-                            location: req.body.location,
-                            phone_number: req.body.phone_number,
-                            user_id: result.insertId
-                        };
-                        daphnedb.collection("users").insertOne(newUser, function(err, res) {
-                            if (err) throw err;
-                            db.close();
-                          });
-                    })
+                    SignUpMongo(req.body.first_name, req.body.last_name, req.body.date_birth, 
+                        req.body.email, req.body.organization, req.body.position, req.body.department, req.body.location,
+                        req.body.phone_number,result.insertId)
+                    .then
+                    (resu =>{
+                        console.log(resu)
+                        con.end()
+                        res.status(200)
+                        return res.json
+                        (
+                            { 
+                                "user_id": result.insertId,
+                                "user_token": newToken           
+                            }
+                        ); 
+                        }
+                    )
+      
+                    
                 } catch (error) {
                     res.status(400);
-                    res.json("Something Wrong");
+                    return res.json(error);
                 }
-                
-
-                res.status(200);
-                res.json
-                (
-                    { 
-                        "user_id": result.insertId,
-                        "user_token": newToken           
-                    }
-                ); 
             }
             else
             {
                 res.status(400);
-                res.json
+                return res.json
                 (
                     { 
                         "error": err.sqlMessage,         
@@ -203,7 +221,7 @@ function SignUp(req,res)
     catch (error) 
     {   
         res.status(400);
-        res.json("Something Wrong");
+        return res.json(error);
     }
 }
 
