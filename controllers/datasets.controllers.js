@@ -225,45 +225,44 @@ function DeleteDatasetByDOI(req, res) {
     var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
     try 
     {
-        handleDisconnect();
-        con.query(query, function (err, result, fields) 
+
+        var params = 
         {
-            console.log("result")
-            if (err) {
-                return res.json(err);
-            }
-            MongoDeletedataByDatasetDoi(req.body.dataset_doi)
-            .then(resu=>{
-                con.end()
-                if (resu.deletedCount > 0)
-                {
-                    var params = 
-                    {
-                        Bucket:  'daphne-angular',
-                        Key: req.body.original_file_name
-                    };
+            Bucket:  'daphne-angular',
+            Key: req.body.original_file_name
+        };
                       
-                    s3.deleteObject(params, function(err, data) {
-                        if (err) 
-                        {                    
-                            res.status(400);
-                            return res.json(err.stack) 
-                        } // an error occurred
-                        else{
+        s3.deleteObject(params, function(err, data) {
+            if (err) 
+            {                    
+                res.status(400);
+                return res.json(err.stack) 
+            } 
+
+
+            handleDisconnect();
+            con.query(query, function (err, result, fields) 
+            {
+                if (err) {
+                    return res.json(err);
+                }
+                MongoDeletedataByDatasetDoi(req.body.dataset_doi)
+                .then
+                (
+                    resu=>
+                    {
+                        con.end()
+                        if (resu.deletedCount > 0)
+                        {
                             res.status(200);
                             return res.json(data);
-                        }       
-                    })
-                }
-                else{
-                    res.status(400);
-                    return res.json("Something wrong") 
-                }
-                res.status(200);
-
-                return res.json(resu);
-            })            
-        });
+                        }
+                        res.status(400);
+                        return res.json("Something wrong")                        
+                })
+            })
+        })
+            
     } catch (e) 
     { 
         return res.json("Something Wrong");   
