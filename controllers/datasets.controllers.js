@@ -240,27 +240,27 @@ function DeleteDatasetByDOI(req, res) {
             } 
 
 
-            handleDisconnect();
-            con.query(query, function (err, result, fields) 
-            {
-                if (err) {
-                    return res.json(err);
-                }
-                MongoDeletedataByDatasetDoi(req.body.dataset_doi)
-                .then
-                (
-                    resu=>
-                    {
-                        con.end()
-                        if (resu.deletedCount > 0)
-                        {
-                            res.status(200);
-                            return res.json(data);
-                        }
-                        res.status(400);
-                        return res.json("Something wrong")                        
-                })
-            })
+            // handleDisconnect();
+            // con.query(query, function (err, result, fields) 
+            // {
+            //     if (err) {
+            //         return res.json(err);
+            //     }
+            //     MongoDeletedataByDatasetDoi(req.body.dataset_doi)
+            //     .then
+            //     (
+            //         resu=>
+            //         {
+            //             con.end()
+            //             if (resu.deletedCount > 0)
+            //             {
+            //                 res.status(200);
+            //                 return res.json(data);
+            //             }
+            //             res.status(400);
+            //             return res.json("Something wrong")                        
+            //     })
+            // })
         })
             
     } catch (e) 
