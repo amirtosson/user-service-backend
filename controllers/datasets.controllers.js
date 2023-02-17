@@ -5,6 +5,7 @@ const multerS3 = require('multer-s3');
 const doi = require('../config/doi')
 const mongodb = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
+const { exec } = require("child_process");
 
 //var mongodb = require('mongodb').MongoClient;
 //const fs = require('fs');
@@ -222,52 +223,101 @@ function AddMetadataItem(req,res){
  }
     
 function DeleteDatasetByDOI(req, res) {
-    var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
-    try 
-    {
 
-        var params = 
-        {
-            Bucket:  'daphne-angular',
-            Key: req.body.original_file_name
-        };
-                      
-        s3.deleteObject(params, function(err, data) {
-            if (err) 
-            {                    
-                res.status(400);
-                return res.json(err.stack) 
-            } 
+    exec("aws s3api delete-object --bucket daphne-angular --key " + req.body.original_file_name, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return res.json(error.message);
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return res.json(stderr) ;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
 
 
-            // handleDisconnect();
-            // con.query(query, function (err, result, fields) 
-            // {
-            //     if (err) {
-            //         return res.json(err);
-            //     }
-            //     MongoDeletedataByDatasetDoi(req.body.dataset_doi)
-            //     .then
-            //     (
-            //         resu=>
-            //         {
-            //             con.end()
-            //             if (resu.deletedCount > 0)
-            //             {
-            //                 res.status(200);
-            //                 return res.json(data);
-            //             }
-            //             res.status(400);
-            //             return res.json("Something wrong")                        
-            //     })
-            // })
-        })
+
+
+
+
+
+    // var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
+    // try 
+    // {
+
+    //     // var params = 
+    //     // {
+    //     //     Bucket:  'daphne-angular',
+    //     //     Key: req.body.original_file_name,
+    //     // };
+        
+    //     var params = {
+    //         Bucket: 'daphne-angular',
+    //         Key: req.body.original_file_name, 
+    //         Tagging: {
+    //             TagSet: [
+    //                {
+    //               Key: "Key3", 
+    //               Value: "Value3"
+    //              }, 
+    //                {
+    //               Key: "Key4", 
+    //               Value: "Value4"
+    //              }
+    //             ]
+    //            }
+    //       };
+
+    //       s3.putObjectTagging(params, function(Err, copyData){
+    //         if (Err) {
+    //             return res.json(Err);
+    //         }
+    //         else {
+    //           console.log('Copied: ', params.Key);
+    //           //cb();
+    //           return res.json(copyData) 
+    //         }}
             
-    } catch (e) 
-    { 
-        return res.json("Something Wrong");   
-    }
-    return res.status(200);
+    //         )
+        
+    //     console.log(params)
+    //     s3.deleteObject(params, function(err, data) {
+    //         if (err) 
+    //         {                    
+    //             res.status(400);
+    //             return res.json(err) 
+    //         } 
+
+
+    //         // handleDisconnect();
+    //         // con.query(query, function (err, result, fields) 
+    //         // {
+    //         //     if (err) {
+    //         //         return res.json(err);
+    //         //     }
+    //         //     MongoDeletedataByDatasetDoi(req.body.dataset_doi)
+    //         //     .then
+    //         //     (
+    //         //         resu=>
+    //         //         {
+    //         //             con.end()
+    //         //             if (resu.deletedCount > 0)
+    //         //             {
+    //         //                 res.status(200);
+    //         //                 return res.json(data);
+    //         //             }
+    //         //             res.status(400);
+    //         //             return res.json("Something wrong")                        
+    //         //     })
+    //         // })
+    //     })
+            
+    // } catch (e) 
+    // { 
+    //     return res.json("Something Wrong");   
+    // }
+    // return res.status(200);
 }
 
     //  mongodb.connect(mongoUrl, function(err, db) {
