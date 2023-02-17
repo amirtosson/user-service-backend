@@ -248,7 +248,7 @@ function DeleteDatasetByDOI(req, res) {
                         if (resu.deletedCount > 0)
                         {
                             res.status(200);
-                            return res.json(data);
+                            return res.json(resu);
                         }
                         res.status(400);
                         return res.json("Something wrong")                        
