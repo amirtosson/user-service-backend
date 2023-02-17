@@ -229,9 +229,8 @@ function DeleteDatasetByDOI(req, res) {
             console.log(`error: ${error.message}`);
             return res.json(error.message);
         }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return res.json(stderr) ;
+        else{
+            return res.json("Done") ;
         }
         console.log(`stdout: ${stdout}`);
     });
