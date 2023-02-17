@@ -230,11 +230,38 @@ function DeleteDatasetByDOI(req, res) {
             return res.json(error.message);
         }
         else{
-            return res.json("Done") ;
+            var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
+            try 
+            {
+                handleDisconnect();
+                con.query(query, function (err, result, fields) 
+                {
+                    if (err) {
+                    return res.json(err);
+                }
+                MongoDeletedataByDatasetDoi(req.body.dataset_doi)
+                .then
+                (
+                    resu=>
+                    {
+                        con.end()
+                        if (resu.deletedCount > 0)
+                        {
+                            res.status(200);
+                            return res.json(data);
+                        }
+                        res.status(400);
+                        return res.json("Something wrong")                        
+                    }
+                )
+                })
+            }catch (e) 
+            { 
+                return res.json("Something Wrong");   
+            }
         }
-        console.log(`stdout: ${stdout}`);
     });
-
+}
 
 
 
@@ -317,7 +344,7 @@ function DeleteDatasetByDOI(req, res) {
     //     return res.json("Something Wrong");   
     // }
     // return res.status(200);
-}
+
 
     //  mongodb.connect(mongoUrl, function(err, db) {
     //      if (err) throw err;
