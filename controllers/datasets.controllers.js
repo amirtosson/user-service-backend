@@ -19,10 +19,10 @@ const dbName = 'daphne';
 
 
 // ======================MongoDB functions ========================
-async function MongoAddDataset(dataset_doi, dataset_name) {
+async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi) {
     await client.connect();
     const db = client.db(dbName);
-    var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name};
+    var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name, abstract:abstract, publication_doi:pub_doi};
 
     const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
         console.log(res)
@@ -78,9 +78,7 @@ let AWSBucketStorage = multerS3({
     bucket: 'daphne-angular',
     key: function(req, file, cb) {
         newDOI = doi.GenerateNewDatasetDOI(file.originalname)
-        const names= file.originalname.split('+')
-        file.filename  = names[names.length -1];
-        cb(null,names[names.length -1]);
+        cb(null,'datasets/'+file.originalname);
      }
     })
 
@@ -120,7 +118,7 @@ function handleDisconnect()
 // ====================================== Main APIS========================================
 
 function GetDatasetsByUserId(req,res) {
-    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, datasets_filename, method_name, structure_name, project_name, added_on, dataset_doi, dataset_pid FROM daphne.datasets_list "+
+    var query = "SELECT dataset_id, owner_id, login_name , dataset_name, dataset_filename, method_name, structure_name, project_name, added_on, dataset_doi, dataset_pid FROM daphne.datasets_list "+
     " INNER JOIN methods_list ON datasets_list.method_id = methods_list.method_id" +
     " INNER JOIN users ON users.user_id = datasets_list.owner_id " +
     " INNER JOIN data_structures_list ON datasets_list.dataset_structure_id = data_structures_list.structure_id" + 
@@ -160,48 +158,68 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 function UploadSingleFile(req,res, next) 
 {
     const file = req.file;
-    const name_parts = file.originalname.split('+')
+
     var PID = ""
     var DOI = doi.GenerateNewDatasetDOI(file.originalname)
     var params = {
-        Bucket: 'daphne-angular',
-        Key:file.filename
+        Bucket: 'daphne-angular/datasets/',
+        Key:file.originalname
       };
     s3.getSignedUrl('putObject', params, function (err, url) {
-    PID = url.split('?')[0]
-    var query = "INSERT INTO datasets_list(owner_id, dataset_structure_id, method_id, project_id , dataset_name, dataset_visibilty_id , datasets_filename, dataset_pid, dataset_doi,added_on) VALUES("
-    + name_parts[1] +  ","
-    + "\""+name_parts[2]+  "\""+ ","
-    + "\""+name_parts[3]+  "\""+ ","
-    + "\"" +name_parts[4]+ "\""+ ","
-    + "\"" +name_parts[5]+ "\""+ "," 
-    + "\"" +name_parts[6]+ "\""+ "," 
-    + "\"" +file.filename+ "\""+ "," 
-    + "\"" +PID+ "\""+ "," 
-    + "\"" +DOI+ "\""+ "," 
-    + "now());"
-    try 
-    {
-        handleDisconnect();
-        con.query(query, function (err, result, fields) 
-        {
-            if (err) {
-                return res.status(400);
-            }
-            MongoAddDataset(DOI, name_parts[5])
-            .then(resu=>{
-                con.end()
-                res.status(200);
-                return res.json(resu);
-            })            
-            });
-    } catch (e) 
-    { 
-        return res.json("Something Wrong");   
-    }
-    });
-    return res.status(200);
+        PID = url.split('?')[0]
+        return res.json({
+            "pid":PID, 
+            "doi": DOI, 
+            "file_name":file.originalname
+        })
+
+    })
 }
+
+function AddFileToDatabases(req,res) 
+{    
+    var query = "INSERT INTO datasets_list(owner_id, dataset_name, dataset_structure_name, method_id, project_id , dataset_visibility_id , dataset_filename,"
+    + " dataset_pid, dataset_doi, dataset_sample_name, dataset_exp_system_id, dataset_facility_id, dataset_type, added_on) VALUES("
+    + req.body.dataset_details.owner_id                         +  ","
+    + "\""+req.body.dataset_details.dataset_name                +  "\""+ ","
+    + "\""+req.body.dataset_details.dataset_structure_name      +  "\""+ ","
+    + "\"" +req.body.dataset_details.method_id                  + "\""+ ","
+    + "\"" +req.body.dataset_details.project_id                 + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_visibility_id      + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_filename           + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_pid                + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_doi                + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_sample_name        + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_exp_system_id      + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_facility_id        + "\""+ "," 
+    + "\"" +req.body.dataset_details.dataset_type        + "\""+ "," 
+
+    + "now());"
+     try 
+     {
+         handleDisconnect();
+         console.log(query)
+         con.query(query, function (err, result, fields) 
+         {
+             if (err) {
+                console.log(err)
+                 return res.json(err);
+             }
+             MongoAddDataset(req.body.dataset_details.dataset_doi, req.body.dataset_details.dataset_name, req.body.dataset_details.abstract, req.body.dataset_details.publication_doi)
+             .then(resu=>{
+                 con.end()
+                 res.status(200);
+                 return res.json(resu);
+             })            
+             });
+     } catch (e) 
+     { 
+         return res.json("Something Wrong");   
+     }
+};
+
+
+
 
 function GetMetadataByDatasetDoi(req,res){
     
@@ -224,7 +242,7 @@ function AddMetadataItem(req,res){
     
 function DeleteDatasetByDOI(req, res) {
 
-    exec("aws s3api delete-object --bucket daphne-angular --key " + req.body.original_file_name, (error, stdout, stderr) => {
+    exec("aws s3api delete-object --bucket daphne-angular/datasets --key " + req.body.original_file_name, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return res.json(error.message);
@@ -560,6 +578,7 @@ module.exports =
     //SaveAttachedFile,
     DeleteDatasetByDOI,
     GetDatasetsByUserId,
+    AddFileToDatabases,
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
