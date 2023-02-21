@@ -241,7 +241,7 @@ function AddMetadataItem(req,res){
     
 function DeleteDatasetByDOI(req, res) {
 
-    exec("aws s3api delete-object --bucket daphne-angular/datasets --key " + req.body.original_file_name, (error, stdout, stderr) => {
+    exec("aws s3api delete-object --bucket daphne-angular\datasets --key " + req.body.original_file_name, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return res.json(error.message);
