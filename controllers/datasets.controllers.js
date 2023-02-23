@@ -149,7 +149,6 @@ function GetDatasetsByUserId(req,res) {
     catch (error) 
     {   
         con.end()
-        console.log(error)
         return res.json(error);
     }
 }
@@ -199,7 +198,6 @@ function AddFileToDatabases(req,res)
      try 
      {
          handleDisconnect();
-         console.log(query)
          con.query(query, function (err, result, fields) 
          {
              if (err) {
