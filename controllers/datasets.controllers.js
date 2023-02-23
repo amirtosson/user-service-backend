@@ -65,6 +65,20 @@ async function MongoAddMetadataItem(item_name, item_value, dataset_doi) {
     return findResult;
 }
 
+async function MongoDeleteMetadataItem(item_name, item_value, dataset_doi) {
+    await client.connect();
+    const db = client.db(dbName);
+    var obj = {}
+    obj[item_name]= item_value
+    var delObj = { $set: obj};
+    var mangoquery = {"dataset_doi":dataset_doi};
+
+    const findResult =  await db.collection("datasets_metadata").deleteOne(mangoquery, delObj,function(err, resData) {
+        return resData;
+    })
+    return findResult;
+}
+
 // ========================= AWS-bucket Config and function ====================================
 const s3 = new AWS.S3({
     accessKeyId: "AKIA6ENB2UFPJAG7WPEL",
@@ -113,7 +127,6 @@ function handleDisconnect()
     });
  }
 
-//handleDisconnect();
 
 // ====================================== Main APIS========================================
 
@@ -219,25 +232,6 @@ function AddFileToDatabases(req,res)
 
 
 
-
-function GetMetadataByDatasetDoi(req,res){
-    
-    MongoGetMetadataByDatasetDoi(req.headers.dataset_doi)
-    .then(resu =>{
-        res.status(200)
-        return res.json(resu[0])
-    }) 
- }
-
-function AddMetadataItem(req,res){
-    MongoAddMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
-    .then(
-        resu =>{
-            res.status(200)
-            return res.json(resu)
-        }
-    )
- }
     
 function DeleteDatasetByDOI(req, res) {
 
@@ -283,6 +277,34 @@ function DeleteDatasetByDOI(req, res) {
 
 
 
+function GetMetadataByDatasetDoi(req,res){
+    
+    MongoGetMetadataByDatasetDoi(req.headers.dataset_doi)
+    .then(resu =>{
+        res.status(200)
+        return res.json(resu[0])
+    }) 
+ }
+
+function AddMetadataItem(req,res){
+    MongoAddMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
+    .then(
+        resu =>{
+            res.status(200)
+            return res.json(resu)
+        }
+    )
+ }
+
+function DeleteMetadataByDatasetDoi(req, res) {
+    MongoDeleteMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
+    .then(
+        resu =>{
+            res.status(200)
+            return res.json(resu)
+        }
+    )    
+}
 
 
     // var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
@@ -581,6 +603,7 @@ module.exports =
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
+    DeleteMetadataByDatasetDoi
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
     //GetAttachedFilesByDatasetDoi
