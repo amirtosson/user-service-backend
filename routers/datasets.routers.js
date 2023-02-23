@@ -18,5 +18,6 @@ router.get('/getmetadatabydoi', datasetCtrl.GetMetadataByDatasetDoi);
 // router.get('/getdatasetactivites', datasetCtrl.GetDatasetActivitiesByDoi);
 // router.post('/insertdatasetactivity', datasetCtrl.AddDatasetActivity);
 router.post('/deletemetadataitem', datasetCtrl.DeleteMetadataByDatasetDoi);
+router.post('/editmetadataitem', datasetCtrl.EditMetadataByDatasetDoi);
 router.get('/getdatasetsbyuserid', datasetCtrl.GetDatasetsByUserId);
 module.exports = router;

@@ -70,10 +70,10 @@ async function MongoDeleteMetadataItem(item_name, item_value, dataset_doi) {
     const db = client.db(dbName);
     var obj = {}
     obj[item_name]= item_value
-    var delObj = { $set: obj};
+    var delObj = { $unset: obj};
     var mangoquery = {"dataset_doi":dataset_doi};
 
-    const findResult =  await db.collection("datasets_metadata").deleteOne(mangoquery, delObj,function(err, resData) {
+    const findResult =  await db.collection("datasets_metadata").updateOne(mangoquery, delObj,function(err, resData) {
         return resData;
     })
     return findResult;
@@ -304,6 +304,29 @@ function DeleteMetadataByDatasetDoi(req, res) {
             return res.json(resu)
         }
     )    
+}
+
+function EditMetadataByDatasetDoi(req, res) {
+    MongoDeleteMetadataItem(req.body.old_key,req.body.old_value, req.headers.dataset_doi)
+    .then(
+        resu =>{
+            if (resu.acknowledged) {
+                MongoAddMetadataItem(req.body.new_key,req.body.new_value, req.headers.dataset_doi)
+                .then(
+                    resu2=>{
+                        res.status(200)
+                        return res.json(resu2)
+                    }
+                )
+            }
+            else{
+                res.status(500)
+                return res.json("Something Wrong")
+            }
+
+        }
+    ) 
+       
 }
 
 
@@ -603,7 +626,8 @@ module.exports =
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
-    DeleteMetadataByDatasetDoi
+    DeleteMetadataByDatasetDoi, 
+    EditMetadataByDatasetDoi
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
     //GetAttachedFilesByDatasetDoi
