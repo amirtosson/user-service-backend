@@ -5,9 +5,10 @@ const cors = require('cors');
 app.use(cors({
     origin: '*'
 }));
-app.use(bodyparser.json());
+app.use(bodyparser.json({limit: '50mb'}));
 app.use(bodyparser.urlencoded({
-    extended: false
+    extended: false,
+    limit: '50mb'
   }));
 const userRouters = require("./routers/user.routers")
 const datasetsRouters = require("./routers/datasets.routers")

@@ -6,6 +6,7 @@ const doi = require('../config/doi')
 const mongodb = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
 const { exec } = require("child_process");
+const { stringify } = require('querystring');
 
 //var mongodb = require('mongodb').MongoClient;
 //const fs = require('fs');
@@ -230,8 +231,6 @@ function AddFileToDatabases(req,res)
      }
 };
 
-
-
     
 function DeleteDatasetByDOI(req, res) {
 
@@ -273,8 +272,6 @@ function DeleteDatasetByDOI(req, res) {
         }
     });
 }
-
-
 
 
 function GetMetadataByDatasetDoi(req,res){
@@ -329,6 +326,90 @@ function EditMetadataByDatasetDoi(req, res) {
        
 }
 
+function SaveLabBook(req, res) {
+    //console.log(req.body.eln_data)
+    var dataELN = JSON.stringify(req.body.eln_data) 
+    var query = "INSERT INTO eln_list(eln_owner_id, eln_name, eln_doi, eln_data) VALUES(?,?,?,?)"
+    var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, dataELN]
+    try 
+    {
+        handleDisconnect();
+        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
+        con.query(query,values, function (err, result) {
+            if (err) throw err;
+            if (result === undefined ) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    { 
+                        "error": 'No Datasets'  
+                    }
+                );
+            } 
+            else {
+                con.end()
+                return res.json(result)
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    } 
+}
+
+
+function GetLabBook(req, res) {
+    var query = "SELECT * FROM daphne.eln_list"+
+    " WHERE eln_doi = " + "\""+req.headers.eln_doi+ "\"" +";"
+ 
+    try 
+    {
+        handleDisconnect();
+        con.query(query, function (err, result) {
+            if (err) throw err;
+            if (result[0] === undefined ) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    { 
+                        "error": 'No Datasets'  
+                    }
+                );
+            } 
+            else {
+                con.end()
+                return res.json(result)
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    } 
+}
+
+
+module.exports = 
+{ 
+    UploadSingleFile, 
+    //SaveAttachedFile,
+    DeleteDatasetByDOI,
+    GetDatasetsByUserId,
+    AddFileToDatabases,
+    SaveLabBook,
+    GetLabBook,
+    uploadS3, 
+    GetMetadataByDatasetDoi, 
+    AddMetadataItem, 
+    DeleteMetadataByDatasetDoi, 
+    EditMetadataByDatasetDoi
+    //GetDatasetActivitiesByDoi, 
+    //AddDatasetActivity, 
+    //GetAttachedFilesByDatasetDoi
+};
 
     // var query = "DELETE FROM datasets_list WHERE dataset_doi = "+ "\""+req.body.dataset_doi+ "\"" + ";"
     // try 
@@ -616,19 +697,3 @@ function EditMetadataByDatasetDoi(req, res) {
 //     }
 // }
 
-module.exports = 
-{ 
-    UploadSingleFile, 
-    //SaveAttachedFile,
-    DeleteDatasetByDOI,
-    GetDatasetsByUserId,
-    AddFileToDatabases,
-    uploadS3, 
-    GetMetadataByDatasetDoi, 
-    AddMetadataItem, 
-    DeleteMetadataByDatasetDoi, 
-    EditMetadataByDatasetDoi
-    //GetDatasetActivitiesByDoi, 
-    //AddDatasetActivity, 
-    //GetAttachedFilesByDatasetDoi
-};

@@ -139,6 +139,8 @@ function Login(req,res)
                             "user_token": result[0].user_token,
                             "working_group": result[0].group_name,
                             "role_name": result[0].role_name,
+                            "first_name": result[0].first_name,
+                            "last_name": result[0].last_name,
                             "user": resu[0]        
                         })
                     })

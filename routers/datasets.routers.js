@@ -10,6 +10,8 @@ const datasetCtrl = require('../controllers/datasets.controllers');
 router.post('/uploadfile', datasetCtrl.uploadS3.single('file'), datasetCtrl.UploadSingleFile);
 router.post('/addfiletodatabases', datasetCtrl.AddFileToDatabases);
 
+router.post('/savelabbook', datasetCtrl.SaveLabBook);
+router.get('/getlabbook', datasetCtrl.GetLabBook);
 // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);
 // router.get('/getattachedfilesbydoi', datasetCtrl.GetAttachedFilesByDatasetDoi);
 router.post('/deletedatasetbydoi', datasetCtrl.DeleteDatasetByDOI);
