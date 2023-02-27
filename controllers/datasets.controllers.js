@@ -326,11 +326,12 @@ function EditMetadataByDatasetDoi(req, res) {
        
 }
 
-function SaveLabBook(req, res) {
+function CreateExperimentLabBook(req, res) {
     //console.log(req.body.eln_data)
-    var dataELN = JSON.stringify(req.body.eln_data) 
-    var query = "INSERT INTO eln_list(eln_owner_id, eln_name, eln_doi, eln_data) VALUES(?,?,?,?)"
-    var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, dataELN]
+    const eln_doi =doi.GenerateELNDOI(req.body.eln_name, req.headers.eln_owner_id)
+    //var dataELN = JSON.stringify(req.body.eln_data) 
+    var query = "INSERT INTO eln_list(eln_owner_id, eln_name, eln_doi, eln_data, eln_added_on, eln_last_modified_on) VALUES(?,?,?,?, now(), now())"
+    var values = [req.headers.eln_owner_id, req.body.eln_name, eln_doi, ""]
     try 
     {
         handleDisconnect();
@@ -360,10 +361,9 @@ function SaveLabBook(req, res) {
 }
 
 
-function GetLabBook(req, res) {
-    var query = "SELECT * FROM daphne.eln_list"+
-    " WHERE eln_doi = " + "\""+req.headers.eln_doi+ "\"" +";"
- 
+function GetLabBookListByID(req, res) {
+    var query = "SELECT * FROM daphne.eln_list"+" INNER JOIN users ON users.user_id = eln_list.eln_owner_id "+
+    " WHERE eln_owner_id = " + "\""+req.headers.eln_owner_id+ "\"" +";"
     try 
     {
         handleDisconnect();
@@ -391,6 +391,39 @@ function GetLabBook(req, res) {
     } 
 }
 
+function UpdateLabBookListByDOI(req, res) {
+
+    var dataELN = JSON.stringify(req.body.eln_data) 
+    var query = "UPDATE daphne.eln_list"+
+    " SET eln_data = ? , eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
+    var values = [dataELN, req.body.eln_name, req.body.eln_doi]
+    try 
+    {
+        handleDisconnect();
+        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
+        con.query(query,values, function (err, result) {
+            if (err) throw err;
+            if (result === undefined ) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    { 
+                        "error": 'No Datasets'  
+                    }
+                );
+            } 
+            else {
+                con.end()
+                return res.json(result)
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    } 
+}
 
 module.exports = 
 { 
@@ -399,8 +432,9 @@ module.exports =
     DeleteDatasetByDOI,
     GetDatasetsByUserId,
     AddFileToDatabases,
-    SaveLabBook,
-    GetLabBook,
+    CreateExperimentLabBook,
+    GetLabBookListByID,
+    UpdateLabBookListByDOI,
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
