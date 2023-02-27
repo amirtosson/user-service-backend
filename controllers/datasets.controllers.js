@@ -349,7 +349,7 @@ function CreateExperimentLabBook(req, res) {
             } 
             else {
                 con.end()
-                return res.json(result)
+                return res.json({"eln_doi":eln_doi})
             }
         })
     }
