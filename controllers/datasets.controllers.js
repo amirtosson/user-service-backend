@@ -176,11 +176,14 @@ function UploadSingleFile(req,res, next)
     var PID = ""
     var DOI = doi.GenerateNewDatasetDOI(file.originalname)
     var params = {
-        Bucket: 'daphne-angular/datasets/',
+        Bucket: 'daphne-angular/datasets',
         Key:file.originalname
       };
     s3.getSignedUrl('putObject', params, function (err, url) {
         PID = url.split('?')[0]
+        console.log(url)
+        console.log(PID)
+
         return res.json({
             "pid":PID, 
             "doi": DOI, 
