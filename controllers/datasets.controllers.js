@@ -20,10 +20,10 @@ const dbName = 'daphne';
 
 
 // ======================MongoDB functions ========================
-async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi) {
+async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi, pub_title) {
     await client.connect();
     const db = client.db(dbName);
-    var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name, abstract:abstract, publication_doi:pub_doi};
+    var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name, abstract:abstract, publication_doi:pub_doi, publication_title:pub_title};
 
     const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
         console.log(res)
@@ -221,7 +221,12 @@ function AddFileToDatabases(req,res)
                 console.log(err)
                  return res.json(err);
              }
-             MongoAddDataset(req.body.dataset_details.dataset_doi, req.body.dataset_details.dataset_name, req.body.dataset_details.abstract, req.body.dataset_details.publication_doi)
+             MongoAddDataset(req.body.dataset_details.dataset_doi, 
+                            req.body.dataset_details.dataset_name, 
+                            req.body.dataset_details.abstract, 
+                            req.body.dataset_details.publication_doi,
+                            req.body.dataset_details.publication_title
+                            )
              .then(resu=>{
                  con.end()
                  res.status(200);
