@@ -144,7 +144,11 @@ function GetDatasetsByUserId(req,res) {
     {
         handleDisconnect();
         con.query(query, function (err, result) {
-            if (err) throw err;
+            if (err) {
+                console.log(err)
+                con.end()
+                return res.json(err);
+            }
             if (result[0] === undefined ) {
                 con.end()
                 res.status(404)
