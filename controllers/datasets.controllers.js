@@ -26,7 +26,6 @@ async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi, pub
     var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name, abstract:abstract, publication_doi:pub_doi, publication_title:pub_title};
 
     const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
-        console.log(res)
         return res;
     })
     return AddResult;
@@ -185,9 +184,6 @@ function UploadSingleFile(req,res, next)
       };
     s3.getSignedUrl('putObject', params, function (err, url) {
         PID = url.split('?')[0]
-        console.log(url)
-        console.log(PID)
-
         return res.json({
             "pid":PID, 
             "doi": DOI, 
