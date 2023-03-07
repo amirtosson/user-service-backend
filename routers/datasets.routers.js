@@ -13,6 +13,8 @@ router.post('/addfiletodatabases', datasetCtrl.AddFileToDatabases);
 router.post('/createlabbook', datasetCtrl.CreateExperimentLabBook);
 router.get('/getlabbooklist', datasetCtrl.GetLabBookListByID);
 router.post('/updatelabbook', datasetCtrl.UpdateLabBookListByDOI);
+router.post('/updatelabbooktitle', datasetCtrl.UpdateLabBookListTitleByDOI);
+
 
 // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);
 // router.get('/getattachedfilesbydoi', datasetCtrl.GetAttachedFilesByDatasetDoi);

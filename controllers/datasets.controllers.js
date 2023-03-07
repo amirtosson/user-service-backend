@@ -414,7 +414,46 @@ function UpdateLabBookListByDOI(req, res) {
         handleDisconnect();
         //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
         con.query(query,values, function (err, result) {
-            if (err) throw err;
+            if (err)
+            {
+                con.end()
+                return res.json(err)
+            }
+            if (result === undefined ) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    { 
+                        "error": 'No Datasets'  
+                    }
+                );
+            } 
+            else {
+                con.end()
+                return res.json(result)
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    } 
+}
+function UpdateLabBookListTitleByDOI(req, res) {
+    var query = "UPDATE daphne.eln_list"+
+    " SET eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
+    var values = [req.body.eln_name, req.body.eln_doi]
+    try 
+    {
+        handleDisconnect();
+        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
+        con.query(query,values, function (err, result) {
+            if (err)
+            {
+                con.end()
+                return res.json(err)
+            }
             if (result === undefined ) {
                 con.end()
                 res.status(404)
@@ -447,11 +486,13 @@ module.exports =
     CreateExperimentLabBook,
     GetLabBookListByID,
     UpdateLabBookListByDOI,
+    UpdateLabBookListTitleByDOI,
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
     DeleteMetadataByDatasetDoi, 
-    EditMetadataByDatasetDoi
+    EditMetadataByDatasetDoi,
+
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
     //GetAttachedFilesByDatasetDoi
