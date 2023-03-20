@@ -155,12 +155,51 @@ function Login(req,res)
      }
 }
 
+
+function CheckUsernameAvailability(req,res) {
+    var query = "SELECT EXISTS(Select * FROM users WHERE login_name = " + "\""+req.body.user_name + "\"" + ") As counts;" 
+    try 
+    {
+        handleDisconnect();
+        con.query(query, function (err, result) 
+        {
+            if (err) throw err;
+            res.status(200)
+            if (result[0].counts === 0 ) {
+
+                return res.json(
+                    { 
+                        "available": true  
+                    }
+                );
+            } 
+            else 
+            {
+                return res.json(
+                    { 
+                        "available": false  
+                    }
+                );
+            }
+        })
+    }
+    catch (error) 
+    { 
+        con.end()
+        console.log(error)
+        return res.json("Something Wrong");
+    }
+    
+}
+
+
 function SignUp(req,res)
 { 
+
+    console.log(req.body.newUser)
+
     if (req.body.user_name === "" 
-    || req.body.user_pwd === "" 
-    || req.body.user_role_id < 1 
-    || req.body.working_group_id < 1) 
+    || req.body.user_pwd === "" ) 
     {
         res.status(401)
         return res.json(
@@ -170,13 +209,15 @@ function SignUp(req,res)
             );
         
     }
-    const newToken = userAuthen.GenerateNewToken(req.body)
-    var query = "INSERT INTO users(login_name, user_pwd, user_role_id, user_token , working_group_id) VALUES("
-    + "\""+ req.body.user_name + "\"" + ","
-    + "\""+ req.body.user_pwd +  "\"" + ","
-    + "\""+ req.body.user_role_id +  "\"" + ","
-    + "\""+ newToken +  "\""+ ","
-    + "\""+ req.body.working_group_id +  "\""+");" 
+    const newToken = userAuthen.GenerateNewToken(req.body.newUser)
+    var query = "INSERT INTO users(login_name, user_pwd, user_role_id, user_token , working_group_id, first_name, last_name) VALUES("
+    + "\""+ req.body.newUser.user_name      + "\"" + ","
+    + "\""+ req.body.newUser.user_pwd       + "\"" + ","
+    + "\""+ 1                               + "\"" + ","
+    + "\""+ newToken                        + "\"" + ","
+    + "\""+ 1                               + "\"" + ","
+    + "\""+ req.body.newUser.first_name     + "\"" + ","
+    + "\""+ req.body.newUser.last_name      + "\"" + ");" 
     try 
     {
         handleDisconnect();
@@ -184,13 +225,12 @@ function SignUp(req,res)
         {
             if (err == null && result.insertId > 0) {
                 try {
-                    SignUpMongo(req.body.first_name, req.body.last_name, req.body.date_birth, 
-                        req.body.email, req.body.organization, req.body.position, req.body.department, req.body.location,
-                        req.body.phone_number,result.insertId)
+                    SignUpMongo(req.body.newUser.first_name, req.body.newUser.last_name, req.body.newUser.date_birth, 
+                        req.body.newUser.email, req.body.newUser.organization, req.body.newUser.position, req.body.newUser.department, req.body.newUser.location,
+                        req.body.newUser.phone_number,result.insertId)
                     .then
                     (resu =>{
                         console.log(resu)
-                        con.end()
                         res.status(200)
                         return res.json
                         (
@@ -227,4 +267,4 @@ function SignUp(req,res)
     }
 }
 
-module.exports = {Login, SignUp};
+module.exports = {Login, SignUp, CheckUsernameAvailability};
