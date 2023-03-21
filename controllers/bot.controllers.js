@@ -15,15 +15,24 @@ return completion.data.choices[0];
 
 
 function SendMSG(req, res){
-    runCompletion(req.body.msg)
-    .then(resu=>{
+    try {
+        runCompletion(req.body.msg)
+        .then(resu=>{
+            return res.json(
+                { 
+                    "answer": resu.message.content  
+                }
+            );
+    
+        })
+    } catch (error) {
         return res.json(
             { 
-                "answer": resu.message.content  
+                "answer": error 
             }
         );
+    }
 
-    })
 
 }
 
