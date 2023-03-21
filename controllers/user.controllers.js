@@ -8,26 +8,6 @@ const dbName = 'daphne';
 
 const client = new MongoClient(mongoUrl);
 
-//const Sequelize = require("sequelize");
-
-
-
-// const sequelize = new Sequelize(
-//     'daphne',
-//     'admin',
-//     '26472647',
-//      {
-//        host: 'daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com',
-//        dialect: 'mysql'
-//      }
-// );
-
-// sequelize.authenticate().then(() => {
-//     console.log('Connection has been established successfully.');
-//  }).catch((error) => {
-//     console.error('Unable to connect to the database: ', error);
-//  });
-
 // ======================MongoDB functions ========================
 
 async function LoginMongo(user_id) 
@@ -166,7 +146,7 @@ function CheckUsernameAvailability(req,res) {
             if (err) throw err;
             res.status(200)
             if (result[0].counts === 0 ) {
-
+                con.end()
                 return res.json(
                     { 
                         "available": true  
@@ -175,6 +155,7 @@ function CheckUsernameAvailability(req,res) {
             } 
             else 
             {
+                con.end()
                 return res.json(
                     { 
                         "available": false  
@@ -196,12 +177,11 @@ function CheckUsernameAvailability(req,res) {
 function SignUp(req,res)
 { 
 
-    console.log(req.body.newUser)
-
     if (req.body.user_name === "" 
     || req.body.user_pwd === "" ) 
     {
         res.status(401)
+        con.end()
         return res.json(
                 { 
                     "user_id": 0, 
@@ -232,6 +212,7 @@ function SignUp(req,res)
                     (resu =>{
                         console.log(resu)
                         res.status(200)
+                        con.end()
                         return res.json
                         (
                             { 
@@ -245,12 +226,14 @@ function SignUp(req,res)
                     
                 } catch (error) {
                     res.status(400);
+                    con.end()
                     return res.json(error);
                 }
             }
             else
             {
                 res.status(400);
+                con.end()
                 return res.json
                 (
                     { 
@@ -263,6 +246,7 @@ function SignUp(req,res)
     catch (error) 
     {   
         res.status(400);
+        con.end()
         return res.json(error);
     }
 }
