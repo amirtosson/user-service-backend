@@ -472,6 +472,45 @@ function UpdateLabBookListTitleByDOI(req, res) {
     } 
 }
 
+function GetLabBookLinkedDatasetsById(req, res) {
+    var query = "SELECT * FROM daphne.dataset_elns_links"+
+    " WHERE eln_id = " + req.headers.eln_id +";"
+    console.log(query)
+    try 
+    {
+        handleDisconnect();
+        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
+        con.query(query, function (err, result) {
+            if (err)
+            {
+                con.end()
+                return res.json(err)
+            }
+            if (result === undefined ) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    { 
+                        "error": 'No Datasets'  
+                    }
+                );
+            } 
+            else {
+                console.log(result)
+                con.end()
+                return res.json(result)
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    } 
+}
+
+
+
 module.exports = 
 { 
     UploadSingleFile, 
@@ -488,6 +527,7 @@ module.exports =
     AddMetadataItem, 
     DeleteMetadataByDatasetDoi, 
     EditMetadataByDatasetDoi,
+    GetLabBookLinkedDatasetsById
 
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 

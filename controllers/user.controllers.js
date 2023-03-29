@@ -251,4 +251,13 @@ function SignUp(req,res)
     }
 }
 
-module.exports = {Login, SignUp, CheckUsernameAvailability};
+
+function HealthTest(req,res) {
+    res.status(200)            
+    return res.json
+            ("OK")         
+                            
+}
+
+
+module.exports = {Login, SignUp, CheckUsernameAvailability, HealthTest};

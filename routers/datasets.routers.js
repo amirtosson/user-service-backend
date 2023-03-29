@@ -14,6 +14,7 @@ router.post('/createlabbook', datasetCtrl.CreateExperimentLabBook);
 router.get('/getlabbooklist', datasetCtrl.GetLabBookListByID);
 router.post('/updatelabbook', datasetCtrl.UpdateLabBookListByDOI);
 router.post('/updatelabbooktitle', datasetCtrl.UpdateLabBookListTitleByDOI);
+router.get('/getlinkeddatasetsbyelnid', datasetCtrl.GetLabBookLinkedDatasetsById);
 
 
 // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);
