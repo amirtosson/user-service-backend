@@ -72,7 +72,7 @@ var con;
          if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
              handleDisconnect();                        
          } else {                                      
-             throw err;                                 
+            handleDisconnect();                                 
          }
      });
  }
