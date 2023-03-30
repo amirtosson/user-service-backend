@@ -2,6 +2,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const app = express();   
 const cors = require('cors');
+require('dotenv').config()
 app.use(cors({
     origin: '*'
 }));

@@ -475,7 +475,6 @@ function UpdateLabBookListTitleByDOI(req, res) {
 function GetLabBookLinkedDatasetsById(req, res) {
     var query = "SELECT * FROM daphne.dataset_elns_links"+
     " WHERE eln_id = " + req.headers.eln_id +";"
-    console.log(query)
     try 
     {
         handleDisconnect();
@@ -496,7 +495,6 @@ function GetLabBookLinkedDatasetsById(req, res) {
                 );
             } 
             else {
-                console.log(result)
                 con.end()
                 return res.json(result)
             }

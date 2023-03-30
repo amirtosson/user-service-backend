@@ -181,7 +181,6 @@ function SignUp(req,res)
     || req.body.user_pwd === "" ) 
     {
         res.status(401)
-        con.end()
         return res.json(
                 { 
                     "user_id": 0, 
@@ -210,9 +209,8 @@ function SignUp(req,res)
                         req.body.newUser.phone_number,result.insertId)
                     .then
                     (resu =>{
-                        console.log(resu)
                         res.status(200)
-                        con.end()
+                        //con.end()
                         return res.json
                         (
                             { 
