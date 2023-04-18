@@ -24,7 +24,7 @@ async function GetRecipesByUserIdMongo(user_id)
 {
     await client.connect();
     const db = client.db(dbNamer);
-    var mangoquery = {"user_id":1};
+    var mangoquery = {"user_id":user_id};
     const findResult =  await db.collection("Recipes").find(mangoquery).toArray()
     return findResult;
 }
@@ -521,7 +521,7 @@ function GetLabBookLinkedDatasetsById(req, res) {
 }
 
 function GetRecipesByUserId(req, res){ 
-    GetRecipesByUserIdMongo(1)
+    GetRecipesByUserIdMongo(req.header.user_id)
     .then(recipies=>{
         res.status(200)
         return res.json(
