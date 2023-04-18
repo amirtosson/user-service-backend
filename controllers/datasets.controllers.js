@@ -521,7 +521,7 @@ function GetLabBookLinkedDatasetsById(req, res) {
 }
 
 function GetRecipesByUserId(req, res){ 
-    GetRecipesByUserIdMongo("1")
+    GetRecipesByUserIdMongo(1)
     .then(recipies=>{
         res.status(200)
         return res.json(
