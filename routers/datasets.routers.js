@@ -28,7 +28,7 @@ router.post('/deletemetadataitem', datasetCtrl.DeleteMetadataByDatasetDoi);
 router.post('/editmetadataitem', datasetCtrl.EditMetadataByDatasetDoi);
 router.get('/getdatasetsbyuserid', datasetCtrl.GetDatasetsByUserId);
 
-router.get('/getrecipesbyuserid', datasetCtrl.GetRecipesByUserIdMongo);
+router.get('/getrecipesbyuserid', datasetCtrl.GetRecipesByUserId);
 
 
 module.exports = router;
