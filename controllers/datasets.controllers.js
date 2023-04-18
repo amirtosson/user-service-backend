@@ -25,7 +25,7 @@ async function GetRecipesByUserIdMongo(user_id)
     await client.connect();
     const db = client.db(dbNamer);
     var mangoquery = {"user_id":user_id};
-    const findResult =  await db.collection("Recipes").find(mangoquery).toArray()
+    const findResult =  await db.collection("Recipes").find(mangoquery)
     return findResult;
 }
 
