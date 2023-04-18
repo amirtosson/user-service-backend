@@ -18,6 +18,19 @@ const client = new MongoClient(mongoUrl);
 const dbName = 'daphne';
 
 
+const dbNamer = 'ricetta';
+
+async function GetRecipesByUserIdMongo(user_id) 
+{
+    await client.connect();
+    const db = client.db(dbNamer);
+    var mangoquery = {"user_id":user_id};
+    const findResult =  await db.collection("Recipes").find(mangoquery).toArray()
+    return findResult;
+}
+
+
+
 
 // ======================MongoDB functions ========================
 async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi, pub_title) {
@@ -525,7 +538,8 @@ module.exports =
     AddMetadataItem, 
     DeleteMetadataByDatasetDoi, 
     EditMetadataByDatasetDoi,
-    GetLabBookLinkedDatasetsById
+    GetLabBookLinkedDatasetsById,
+    GetRecipesByUserIdMongo
 
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
