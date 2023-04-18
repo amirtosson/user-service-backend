@@ -525,9 +525,9 @@ function GetRecipesByUserId(req, res){
     .then(recipies=>{
         res.status(200)
         return res.json(
-            {
+            
                 recipies
-            }
+            
         )
     })
                                                         
