@@ -1,9 +1,10 @@
 const mysql = require('mysql2');
-const mongodb = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
 const userAuthen = require('../config/authorization')
 
-const mongoUrl = 'mongodb://localhost:27017';
+const dbCon = require("../config/db-connections")
+
+const mongoUrl = 'mongodb://3.64.14.232:27017';
 const dbName = 'daphne';
 
 const client = new MongoClient(mongoUrl);
@@ -251,9 +252,28 @@ function SignUp(req,res)
 
 
 function HealthTest(req,res) {
-    res.status(200)            
-    return res.json
-            ("OK")         
+    var query = "SELECT * FROM users"
+    try 
+    {
+        const c = dbCon.handleDisconnect();
+        c.query(query, function (err, result) 
+        {
+            LoginMongo(result[0].user_id)
+                    .then(resu =>{
+            if (err) throw err;
+            res.status(200)
+            return res.json(
+                { 
+                    "available": resu  
+                }
+            );})
+        })
+    }
+    catch (error) 
+    { 
+        console.log(error)
+        return res.json("Something Wrong");
+    }    
                             
 }
 

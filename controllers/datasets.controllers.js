@@ -3,15 +3,9 @@ const multer = require('multer');
 const AWS = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const doi = require('../config/doi')
-const mongodb = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
 const { exec } = require("child_process");
-const { stringify } = require('querystring');
 
-//var mongodb = require('mongodb').MongoClient;
-//const fs = require('fs');
-//var glob = require("glob");
-//const { all } = require('../routers/user.routers');
 
 var mongoUrl = "mongodb://localhost:27017/";
 const client = new MongoClient(mongoUrl);
