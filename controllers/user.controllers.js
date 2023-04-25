@@ -252,29 +252,11 @@ function SignUp(req,res)
 
 
 function HealthTest(req,res) {
-    var query = "SELECT * FROM users"
-    try 
-    {
-        const c = dbCon.handleDisconnect();
-        c.query(query, function (err, result) 
-        {
-            LoginMongo(result[0].user_id)
-                    .then(resu =>{
-            if (err) throw err;
-            res.status(200)
-            return res.json(
-                { 
-                    "available": resu  
-                }
-            );})
-        })
-    }
-    catch (error) 
-    { 
-        console.log(error)
-        return res.json("Something Wrong");
-    }    
-                            
+    return res.json(
+        { 
+            "healthy": true  
+        }
+    )    
 }
 
 
