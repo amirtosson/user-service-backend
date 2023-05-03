@@ -4,7 +4,7 @@ const userAuthen = require('../config/authorization')
 
 const dbCon = require("../config/db-connections")
 
-const mongoUrl = 'mongodb://3.64.14.232:27017';
+const mongoUrl = 'mongodb://3.64.14.232:28017';
 const dbName = 'daphne';
 
 const client = new MongoClient(mongoUrl);
