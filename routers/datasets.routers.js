@@ -1,22 +1,10 @@
 
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const AWS = require('aws-sdk');
-const multerS3 = require('multer-s3');
-
-const PATH_RAW = '/home/tosson/Desktop/Projects/datasets/rawdatasets/';
 const datasetCtrl = require('../controllers/datasets.controllers');
+
 router.post('/uploadfile', datasetCtrl.uploadS3.single('file'), datasetCtrl.UploadSingleFile);
 router.post('/addfiletodatabases', datasetCtrl.AddFileToDatabases);
-
-router.post('/createlabbook', datasetCtrl.CreateExperimentLabBook);
-router.get('/getlabbooklist', datasetCtrl.GetLabBookListByID);
-router.post('/updatelabbook', datasetCtrl.UpdateLabBookListByDOI);
-router.post('/updatelabbooktitle', datasetCtrl.UpdateLabBookListTitleByDOI);
-router.get('/getlinkeddatasetsbyelnid', datasetCtrl.GetLabBookLinkedDatasetsById);
-
-
 // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);
 // router.get('/getattachedfilesbydoi', datasetCtrl.GetAttachedFilesByDatasetDoi);
 router.post('/deletedatasetbydoi', datasetCtrl.DeleteDatasetByDOI);
@@ -27,8 +15,6 @@ router.get('/getmetadatabydoi', datasetCtrl.GetMetadataByDatasetDoi);
 router.post('/deletemetadataitem', datasetCtrl.DeleteMetadataByDatasetDoi);
 router.post('/editmetadataitem', datasetCtrl.EditMetadataByDatasetDoi);
 router.get('/getdatasetsbyuserid', datasetCtrl.GetDatasetsByUserId);
-
-router.get('/getrecipesbyuserid', datasetCtrl.GetRecipesByUserId);
 
 
 module.exports = router;

@@ -1,35 +1,15 @@
-const mysql = require('mysql2');
+const mongoCon = require("../config/mongo-connections")
+const dbCon = require("../config/db-connections")
 const multer = require('multer');
 const AWS = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const doi = require('../config/doi')
-const { MongoClient } = require('mongodb');
 const { exec } = require("child_process");
-
-
-var mongoUrl = "mongodb://localhost:28017/";
-const client = new MongoClient(mongoUrl);
-const dbName = 'daphne';
-
-
-const dbNamer = 'ricetta';
-
-async function GetRecipesByUserIdMongo(user_id) 
-{
-    await client.connect();
-    const db = client.db(dbNamer);
-    var mangoquery = {"CreatorId":'1'};
-    const findResult =  await db.collection("Recipes").find(mangoquery).toArray()
-    return findResult;
-}
-
-
 
 
 // ======================MongoDB functions ========================
 async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi, pub_title) {
-    await client.connect();
-    const db = client.db(dbName);
+    const db = await mongoCon.EstablishConnection()
     var myobj = { dataset_doi: dataset_doi, dataset_name: dataset_name, abstract:abstract, publication_doi:pub_doi, publication_title:pub_title};
 
     const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
@@ -39,8 +19,7 @@ async function MongoAddDataset(dataset_doi, dataset_name, abstract, pub_doi, pub
   }
 
 async function MongoGetMetadataByDatasetDoi(dataset_doi) {
-    await client.connect();
-    const db = client.db(dbName);
+    const db = await mongoCon.EstablishConnection()
     var mangoquery = {"dataset_doi":dataset_doi};
     const findResult =  await db.collection("datasets_metadata").find(mangoquery).toArray(function(err, resData) {
         return resData;
@@ -49,8 +28,7 @@ async function MongoGetMetadataByDatasetDoi(dataset_doi) {
 }
 
 async function MongoDeletedataByDatasetDoi(dataset_doi) {
-    await client.connect();
-    const db = client.db(dbName);
+    const db = await mongoCon.EstablishConnection()
     var mangoquery = {"dataset_doi":dataset_doi};
     const deleteResult =  await db.collection("datasets_metadata").deleteOne(mangoquery, function(err, resData) {
         return resData;
@@ -60,8 +38,7 @@ async function MongoDeletedataByDatasetDoi(dataset_doi) {
 
 
 async function MongoAddMetadataItem(item_name, item_value, dataset_doi) {
-    await client.connect();
-    const db = client.db(dbName);
+    const db = await mongoCon.EstablishConnection()
     var obj = {}
     obj[item_name]= item_value
     var newvalues = { $set: obj};
@@ -73,8 +50,7 @@ async function MongoAddMetadataItem(item_name, item_value, dataset_doi) {
 }
 
 async function MongoDeleteMetadataItem(item_name, item_value, dataset_doi) {
-    await client.connect();
-    const db = client.db(dbName);
+    const db = await mongoCon.EstablishConnection()
     var obj = {}
     obj[item_name]= item_value
     var delObj = { $unset: obj};
@@ -102,39 +78,6 @@ let AWSBucketStorage = multerS3({
         cb(null,'datasets/'+file.originalname);
      }
     })
-
-// ============================== Mysql config and connection handling ==============================
-const db_config = {
-    host:"daphnemysqldb.c9zdqm1tdnav.eu-central-1.rds.amazonaws.com",
-    port:"3306",
-    user:"admin",
-    password: "26472647",
-    database: "daphne"
-  };
-
-
-var con;
-function handleDisconnect() 
-{
-    con = mysql.createConnection(db_config);
-    con.connect(function(err) 
-    {            
-        if(err) {                                  
-            console.log('error when connecting to db:', err);
-            setTimeout(handleDisconnect, 2000); 
-        }                                     
-    });                                     
-    con.on('error', function(err) 
-    {
-        if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
-            handleDisconnect();                        
-        } else {                                      
-            throw err;                                 
-        }
-    });
- }
-
-
 // ====================================== Main APIS========================================
 
 function GetDatasetsByUserId(req,res) {
@@ -148,7 +91,7 @@ function GetDatasetsByUserId(req,res) {
     " OR dataset_visibility_id = 1;";
     try 
     {
-        handleDisconnect();
+        var con = dbCon.handleDisconnect()
         con.query(query, function (err, result) {
             if (err) {
                 console.log(err)
@@ -221,7 +164,7 @@ function AddFileToDatabases(req,res)
     + "now());"
      try 
      {
-         handleDisconnect();
+        var con = dbCon.handleDisconnect()
          con.query(query, function (err, result, fields) 
          {
              if (err) {
@@ -244,9 +187,8 @@ function AddFileToDatabases(req,res)
      { 
          return res.json("Something Wrong");   
      }
-};
-
-    
+}
+   
 function DeleteDatasetByDOI(req, res) {
 
     exec("aws s3api delete-object --bucket daphne-angular --key datasets/" + req.body.original_file_name, (error, stdout, stderr) => {
@@ -288,7 +230,6 @@ function DeleteDatasetByDOI(req, res) {
     });
 }
 
-
 function GetMetadataByDatasetDoi(req,res){
     
     MongoGetMetadataByDatasetDoi(req.headers.dataset_doi)
@@ -296,7 +237,7 @@ function GetMetadataByDatasetDoi(req,res){
         res.status(200)
         return res.json(resu[0])
     }) 
- }
+}
 
 function AddMetadataItem(req,res){
     MongoAddMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
@@ -306,7 +247,7 @@ function AddMetadataItem(req,res){
             return res.json(resu)
         }
     )
- }
+}
 
 function DeleteMetadataByDatasetDoi(req, res) {
     MongoDeleteMetadataItem(req.body.key,req.body.value, req.headers.dataset_doi)
@@ -341,192 +282,6 @@ function EditMetadataByDatasetDoi(req, res) {
        
 }
 
-function CreateExperimentLabBook(req, res) {
-    //console.log(req.body.eln_data)
-    const eln_doi =doi.GenerateELNDOI(req.body.eln_name, req.headers.eln_owner_id)
-    //var dataELN = JSON.stringify(req.body.eln_data) 
-    var query = "INSERT INTO eln_list(eln_owner_id, eln_name, eln_doi, eln_data, eln_added_on, eln_last_modified_on) VALUES(?,?,?,?, now(), now())"
-    var values = [req.headers.eln_owner_id, req.body.eln_name, eln_doi, ""]
-    try 
-    {
-        handleDisconnect();
-        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
-        con.query(query,values, function (err, result) {
-            if (err) throw err;
-            if (result === undefined ) {
-                con.end()
-                res.status(404)
-                return res.json(
-                    { 
-                        "error": 'No Datasets'  
-                    }
-                );
-            } 
-            else {
-                con.end()
-                return res.json({"eln_doi":eln_doi})
-            }
-        })
-    }
-    catch (error) 
-    {   
-        con.end()
-        return res.json(error);
-    } 
-}
-
-
-function GetLabBookListByID(req, res) {
-    var query = "SELECT * FROM daphne.eln_list"+" INNER JOIN users ON users.user_id = eln_list.eln_owner_id "+
-    " WHERE eln_owner_id = " + "\""+req.headers.eln_owner_id+ "\"" +";"
-    try 
-    {
-        handleDisconnect();
-        con.query(query, function (err, result) {
-            if (err) throw err;
-            if (result[0] === undefined ) {
-                con.end()
-                res.status(404)
-                return res.json(
-                    { 
-                        "error": 'No Datasets'  
-                    }
-                );
-            } 
-            else {
-                con.end()
-                return res.json(result)
-            }
-        })
-    }
-    catch (error) 
-    {   
-        con.end()
-        return res.json(error);
-    } 
-}
-
-function UpdateLabBookListByDOI(req, res) {
-
-    var dataELN = JSON.stringify(req.body.eln_data) 
-    var query = "UPDATE daphne.eln_list"+
-    " SET eln_data = ? , eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
-    var values = [dataELN, req.body.eln_name, req.body.eln_doi]
-    try 
-    {
-        handleDisconnect();
-        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
-        con.query(query,values, function (err, result) {
-            if (err)
-            {
-                con.end()
-                return res.json(err)
-            }
-            if (result === undefined ) {
-                con.end()
-                res.status(404)
-                return res.json(
-                    { 
-                        "error": 'No Datasets'  
-                    }
-                );
-            } 
-            else {
-                con.end()
-                return res.json(result)
-            }
-        })
-    }
-    catch (error) 
-    {   
-        con.end()
-        return res.json(error);
-    } 
-}
-function UpdateLabBookListTitleByDOI(req, res) {
-    var query = "UPDATE daphne.eln_list"+
-    " SET eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
-    var values = [req.body.eln_name, req.body.eln_doi]
-    try 
-    {
-        handleDisconnect();
-        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
-        con.query(query,values, function (err, result) {
-            if (err)
-            {
-                con.end()
-                return res.json(err)
-            }
-            if (result === undefined ) {
-                con.end()
-                res.status(404)
-                return res.json(
-                    { 
-                        "error": 'No Datasets'  
-                    }
-                );
-            } 
-            else {
-                con.end()
-                return res.json(result)
-            }
-        })
-    }
-    catch (error) 
-    {   
-        con.end()
-        return res.json(error);
-    } 
-}
-
-function GetLabBookLinkedDatasetsById(req, res) {
-    var query = "SELECT * FROM daphne.dataset_elns_links"+
-    " WHERE eln_id = " + req.headers.eln_id +";"
-    try 
-    {
-        handleDisconnect();
-        //var values = [req.body.eln_owner_id, req.body.eln_name, req.body.eln_doi, eq.body.eln_data  ]
-        con.query(query, function (err, result) {
-            if (err)
-            {
-                con.end()
-                return res.json(err)
-            }
-            if (result === undefined ) {
-                con.end()
-                res.status(404)
-                return res.json(
-                    { 
-                        "error": 'No Datasets'  
-                    }
-                );
-            } 
-            else {
-                con.end()
-                return res.json(result)
-            }
-        })
-    }
-    catch (error) 
-    {   
-        con.end()
-        return res.json(error);
-    } 
-}
-
-function GetRecipesByUserId(req, res){ 
-    GetRecipesByUserIdMongo(req.header.user_id)
-    .then(recipies=>{
-        res.status(200)
-        return res.json(
-            
-                recipies
-            
-        )
-    })
-                                                        
-}
-
 
 module.exports = 
 { 
@@ -535,17 +290,11 @@ module.exports =
     DeleteDatasetByDOI,
     GetDatasetsByUserId,
     AddFileToDatabases,
-    CreateExperimentLabBook,
-    GetLabBookListByID,
-    UpdateLabBookListByDOI,
-    UpdateLabBookListTitleByDOI,
     uploadS3, 
     GetMetadataByDatasetDoi, 
     AddMetadataItem, 
     DeleteMetadataByDatasetDoi, 
     EditMetadataByDatasetDoi,
-    GetLabBookLinkedDatasetsById,
-    GetRecipesByUserId
 
     //GetDatasetActivitiesByDoi, 
     //AddDatasetActivity, 
