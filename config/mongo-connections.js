@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
-const mongoUrl = 'mongodb://3.64.14.232:28017';
-const dbName = 'daphne';
+const mongoUrl = process.env.MONGO_DB_URL;
+const dbName = process.env.MONGO_DB_NAME;
 
 const client = new MongoClient(mongoUrl);
 async function EstablishConnection(){
