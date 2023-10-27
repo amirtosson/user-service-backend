@@ -6,7 +6,10 @@ const db_config =
     port: process.env.MYSQL_DB_PORT,
     user: process.env.MYSQL_DB_USER,
     password: process.env.MYSQL_DB_PWD,
-    database: process.env.MYSQL_DB_DBNAME
+    database: process.env.MYSQL_DB_DBNAME,
+    ssl : {
+        rejectUnauthorized: false
+      }
 };
 
 
