@@ -100,7 +100,7 @@ function GetDatasetsByUserId(req,res) {
             }
             if (result[0] === undefined ) {
                 con.end()
-                res.status(404)
+                res.status(200)
                 return res.json(
                     { 
                         "error": 'No Datasets'  
@@ -109,6 +109,7 @@ function GetDatasetsByUserId(req,res) {
             } 
             else {
                 con.end()
+                res.status(200)
                 return res.json(result)
             }
         })
