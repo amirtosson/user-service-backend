@@ -10,4 +10,12 @@ function GenerateNewToken(user){
     return token;    
 }
 
-module.exports = {GenerateNewToken}
+function GenerateRandomDOI(name) {
+    var stringifiedData = CryptoJS.enc.Utf8.parse(name);
+    var doi = base64url(stringifiedData.toString())
+    const d = new Date()
+    var DOI= d.getTime().toString()+"."+ doi.substr(7,50)
+    return DOI; 
+}
+
+module.exports = {GenerateNewToken, GenerateRandomDOI}

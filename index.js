@@ -17,6 +17,7 @@ const userRouters = require("./routers/user.routers")
 const datasetsRouters = require("./routers/datasets.routers")
 const botRouters = require("./routers/bot.routers")
 const expRouters = require("./routers/experiments.routers")
+const sampRouters = require("./routers/samples.routers")
 const gRouters = require("./routers/general.routers")
 
 
@@ -25,6 +26,7 @@ app.use(datasetsRouters)
 app.use(botRouters)
 app.use(elnRouters)
 app.use(expRouters)
+app.use(sampRouters)
 app.use(gRouters)
 
 
