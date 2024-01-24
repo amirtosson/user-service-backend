@@ -8,8 +8,12 @@ const authen = require('../config/authorization')
 // ============================== Main Functions ==============================
 
 function GetSamplesByUserId(req,res) {
-    var query = "SELECT * FROM daphne.samples_list "+
-                " WHERE sample_owner_id = " +req.headers.sample_owner_id
+    var query =     "SELECT * FROM ("+
+                    "SELECT * FROM daphne.samples_list as s "+ 
+                    "INNER JOIN (SELECT login_name, user_id  FROM daphne.users)  as U ON U.user_id = sample_owner_id "+  
+                    "WHERE sample_owner_id = " +req.headers.sample_owner_id +
+                    ") AS S"
+                
     try 
     {
         var con = dbCon.handleDisconnect()
