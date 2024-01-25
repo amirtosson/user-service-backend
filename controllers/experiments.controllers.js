@@ -7,9 +7,9 @@ const mongoCon = require("../config/mongo-connections")
 // ============================== Main Functions ==============================
 
 function GetExperimentsByUserId(req,res) {
-    var query = "SELECT * FROM daphne.experiments_list "+
-                " INNER JOIN facilities_list ON experiments_list.experiment_facility_id = facilities_list.facility_id" +
-                " WHERE experiment_owner_id = " +req.headers.experiment_owner_id
+    var query = "SELECT*, GROUP_CONCAT(DISTINCT link_sample_id) as linked_samples FROM daphne.experiments_list "+
+    "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
+    "WHERE experiment_owner_id = "+req.headers.experiment_owner_id + " group by experiment_id"
     try 
     {
         var con = dbCon.handleDisconnect()

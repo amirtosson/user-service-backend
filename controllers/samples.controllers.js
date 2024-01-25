@@ -32,7 +32,7 @@ function GetSamplesByUserId(req,res) {
                     }
                 );
             } 
-            else {
+            else { 
                 con.end()
                 res.status(200)
                 return res.json(result)
