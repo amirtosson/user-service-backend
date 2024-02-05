@@ -1,19 +1,17 @@
 const dbCon = require("../config/db-connections")
 const mongoCon = require("../config/mongo-connections")
 
-
-
-
 // ============================== Main Functions ==============================
 
 function GetExperimentsByUserId(req,res) {
-    var query = "SELECT*, GROUP_CONCAT(DISTINCT link_sample_id) as linked_samples FROM daphne.experiments_list "+
+    var query = "SELECT*, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
     "WHERE experiment_owner_id = "+req.headers.experiment_owner_id + " group by experiment_id"
     try 
     {
         var con = dbCon.handleDisconnect()
-        con.query(query, function (err, result) {
+        con.query(query, function (err, result) 
+        {
             if (err) {
                 console.log(err)
                 con.end()
@@ -28,11 +26,28 @@ function GetExperimentsByUserId(req,res) {
                     }
                 );
             } 
-            else {
-                con.end()
+            else 
+            {
+                for (let index = 0; index < result.length; index++) 
+                {
+                    if (result[index].linked_samples ===null) continue;
+                    result[index].linked_samples_names = []
+                    result[index].linked_samples_ids = []
+                    var ls = result[index].linked_samples.split(",")
+                    for (let str_index = 0; str_index < ls.length; str_index++) 
+                    {
+                        const element = ls[str_index];
+                        var s = element.split("**n**")
+                        result[index].linked_samples_ids.push(s[0])
+                    
+                        result[index].linked_samples_names.push(s[1])
+                    }
+                    
+                }
                 res.status(200)
                 return res.json(result)
             }
+
         })
     }
     catch (error) 
