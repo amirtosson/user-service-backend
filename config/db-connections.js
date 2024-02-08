@@ -22,14 +22,21 @@ function handleDisconnect() {
             setTimeout(handleDisconnect, 2000);
         }
     });
-    con.on('error', function (err) {
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
-        } else {
-            throw err;
-        }
-    });
-    return con
+    try {
+        con.on('error', function (err) {
+            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                handleDisconnect();
+            } else {
+                throw err;
+            }
+        });
+        return con
+    } catch (error) {
+       con.end()
+       handleDisconnect(); 
+    }
+    
+    
 }
 
 

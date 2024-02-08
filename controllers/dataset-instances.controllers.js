@@ -1,23 +1,18 @@
 const dbCon = require("../config/db-connections")
 const mongoCon = require("../config/mongo-connections")
-const authen = require('../config/authorization')
-
-
-
 
 // ============================== Main Functions ==============================
 
-function GetSamplesByUserId(req,res) {
-    var query =     "SELECT * FROM ("+
-                    "SELECT * FROM daphne.samples_list as s "+ 
-                    "INNER JOIN (SELECT login_name, user_id  FROM daphne.users)  as U ON U.user_id = sample_owner_id "+  
-                    "WHERE sample_owner_id = " +req.headers.sample_owner_id +
-                    ") AS S"
-                
+function GetDatasetInstancesByUserIdAndExperimentId(req,res) {
+    var query = "SELECT dataset_instances_list.*, users.login_name FROM daphne.dataset_instances_list "+
+    " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
+    "WHERE dataset_instance_owner_id = "+req.headers.dataset_instance_owner_id+
+    " AND dataset_instance_linked_exp_id = "+req.headers.linked_exp_id
     try 
     {
         var con = dbCon.handleDisconnect()
-        con.query(query, function (err, result) {
+        con.query(query, function (err, result) 
+        {
             if (err) {
                 console.log(err)
                 con.end()
@@ -27,16 +22,16 @@ function GetSamplesByUserId(req,res) {
                 con.end()
                 res.status(200)
                 return res.json(
-                    { 
-                        "error": 'No Samples found'  
-                    }
+                    -1004
                 );
             } 
-            else { 
+            else 
+            {
                 con.end()
                 res.status(200)
                 return res.json(result)
             }
+
         })
     }
     catch (error) 
@@ -46,22 +41,15 @@ function GetSamplesByUserId(req,res) {
     }
 }
 
-function GetSamplesByUserIdAndExperimentId(req,res) {
-    var query =     "SELECT * FROM ("+
-                    "SELECT * FROM daphne.samples_list as s "+ 
-                    "INNER JOIN (SELECT login_name, user_id  FROM daphne.users)  as U ON U.user_id = sample_owner_id "+  
-                    "WHERE sample_owner_id = " +req.headers.sample_owner_id +
-                    ") AS S"
-
-    var query = "SELECT samples_list.*, users.login_name FROM daphne.samples_list "+
-    " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
-    "WHERE sample_owner_id = "+req.headers.sample_owner_id+
-    " AND sample_linked_exp_id = "+req.headers.linked_exp_id
-                
+function GetDatasetInstancesByUserId(req,res) {
+    var query = "SELECT dataset_instances_list.*, users.login_name FROM daphne.dataset_instances_list "+
+    " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
+    "WHERE dataset_instance_owner_id = "+req.headers.dataset_instance_owner_id
     try 
     {
         var con = dbCon.handleDisconnect()
-        con.query(query, function (err, result) {
+        con.query(query, function (err, result) 
+        {
             if (err) {
                 console.log(err)
                 con.end()
@@ -71,16 +59,16 @@ function GetSamplesByUserIdAndExperimentId(req,res) {
                 con.end()
                 res.status(200)
                 return res.json(
-                    { 
-                        "error": 'No Samples found'  
-                    }
+                    -1004
                 );
             } 
-            else { 
+            else 
+            {
                 con.end()
                 res.status(200)
                 return res.json(result)
             }
+
         })
     }
     catch (error) 
@@ -90,13 +78,10 @@ function GetSamplesByUserIdAndExperimentId(req,res) {
     }
 }
 
-
-
-function CreateSample(req,res) {
-    var query = "INSERT INTO samples_list(sample_owner_id, sample_name, sample_doi, sample_added_on)"
+function CreateExperiment(req,res) {
+    var query = "INSERT INTO experiments_list(experiment_owner_id, experiment_name, experiment_facility_id,experiment_added_on)"
                 + " VALUES(?,?,?, now())"
-    sampleDoi = authen.GenerateRandomDOI(req.body.sample_name) 
-    var values = [req.headers.sample_owner_id, req.body.sample_name, sampleDoi]
+    var values = [req.headers.experiment_owner_id, req.body.experiment_name, req.body.experiment_facility_id]
     try {
         var con = dbCon.handleDisconnect()
         con.query(query, values, function (err, result) {
@@ -123,20 +108,20 @@ function CreateSample(req,res) {
     }
 }
 
-function UpdateSampleById(req,res) {
+function UpdateExperimentById(req,res) {
     
 }
 
-function DeleteSampleById(req,res) {
+function DeleteExperimentById(req,res) {
     
 }
 
 module.exports = 
 { 
-    GetSamplesByUserId, 
-    GetSamplesByUserIdAndExperimentId,
+    GetDatasetInstancesByUserIdAndExperimentId, 
+    GetDatasetInstancesByUserId, 
     //SaveAttachedFile,
-    CreateSample,
-    UpdateSampleById,
-    DeleteSampleById
+    CreateExperiment,
+    UpdateExperimentById,
+    DeleteExperimentById
 };

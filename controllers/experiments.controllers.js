@@ -5,6 +5,7 @@ const mongoCon = require("../config/mongo-connections")
 
 function GetExperimentsByUserId(req,res) {
     var query = "SELECT*, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
+    " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
     "WHERE experiment_owner_id = "+req.headers.experiment_owner_id + " group by experiment_id"
     try 
@@ -38,12 +39,13 @@ function GetExperimentsByUserId(req,res) {
                     {
                         const element = ls[str_index];
                         var s = element.split("**n**")
-                        result[index].linked_samples_ids.push(s[0])
+                        result[index].linked_samples_ids.push(s[0]) 
                     
                         result[index].linked_samples_names.push(s[1])
                     }
                     
                 }
+                con.end()
                 res.status(200)
                 return res.json(result)
             }
