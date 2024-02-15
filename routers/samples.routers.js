@@ -4,6 +4,7 @@ const sampCtrl = require('../controllers/samples.controllers');
 
 router.get('/samples/getsampleslist', sampCtrl.GetSamplesByUserId);
 router.get('/samples/linkedexpgetsampleslist', sampCtrl.GetSamplesByUserId);
+router.get('/samples/getsamplebyid', sampCtrl.GetSampleById);
 
 
 router.post('/samples/create', sampCtrl.CreateSample);

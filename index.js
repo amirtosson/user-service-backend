@@ -22,6 +22,10 @@ const dataFilesRouters = require("./routers/data-files.routers")
 const sampRouters = require("./routers/samples.routers")
 const gRouters = require("./routers/general.routers")
 
+// LIFE SPIN METADATA
+
+const sampMDRouters = require("./routers/lsmd.routers")
+
 
 app.use(userRouters)
 app.use(datasetsRouters)
@@ -32,6 +36,9 @@ app.use(diRouters)
 app.use(dataFilesRouters)
 app.use(sampRouters)
 app.use(gRouters)
+
+app.use(sampMDRouters)
+
 
 
 

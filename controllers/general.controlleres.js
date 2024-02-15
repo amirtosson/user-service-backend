@@ -2,7 +2,7 @@ const dbCon = require("../config/db-connections")
 
 
 function GetFacilitiesList(req,res) {
-    var query = "SELECT * FROM daphne.facilities_list "
+    var query = "SELECT * FROM daphne.facility_list "
     try 
     {
         var con = dbCon.handleDisconnect()
@@ -15,10 +15,7 @@ function GetFacilitiesList(req,res) {
             if (result[0] === undefined ) {
                 con.end()
                 res.status(200)
-                return res.json(
-                    { 
-                        "error": 'No Facilities'  
-                    }
+                return res.json(-1004
                 );
             } 
             else {

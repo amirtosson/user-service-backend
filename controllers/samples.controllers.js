@@ -3,16 +3,45 @@ const mongoCon = require("../config/mongo-connections")
 const authen = require('../config/authorization')
 
 
+async function MongoAddSample(sample_id, sample_doi) {
+    const db = await mongoCon.EstablishConnection()
+    var myobj = { sample_id: sample_id, sample_doi:sample_doi};
 
+    const AddResult =  await db.collection("samples").insertOne(myobj, function(err, res) {
+        return res;
+    })
+    return AddResult;
+  }
+
+async function MongoGetSampleMetadata(sample_id) {
+    const db = await mongoCon.EstablishConnection()
+    var mangoquery = { "sample_id": sample_id };
+    const findResult = await db.collection("samples").find(mangoquery).toArray(function (err, sampleMetadata) {
+        return sampleMetadata;
+    })
+    return findResult;
+}
+
+
+async function MongoAddSampleMetadataItem(sample_id) {
+    const db = await mongoCon.EstablishConnection()
+    var obj = {}
+    obj[item_name]= item_value
+    var newvalues = { $set: obj};
+    var mangoquery = {"sample_id":sample_id};
+    const findResult =  await db.collection("samples").updateOne(mangoquery, newvalues,function(err, resData) {
+        return resData;
+    })
+    return findResult;
+}
 
 // ============================== Main Functions ==============================
 
 function GetSamplesByUserId(req,res) {
-    var query =     "SELECT * FROM ("+
-                    "SELECT * FROM daphne.samples_list as s "+ 
-                    "INNER JOIN (SELECT login_name, user_id  FROM daphne.users)  as U ON U.user_id = sample_owner_id "+  
-                    "WHERE sample_owner_id = " +req.headers.sample_owner_id +
-                    ") AS S"
+    var query = "SELECT samples_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name) as linked_exps FROM daphne.samples_list "+
+    " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
+    "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_sample_id = samples_list.sample_id "+
+    "WHERE sample_owner_id = "+req.headers.sample_owner_id + " group by sample_id"
                 
     try 
     {
@@ -33,6 +62,23 @@ function GetSamplesByUserId(req,res) {
                 );
             } 
             else { 
+                for (let index = 0; index < result.length; index++) 
+                {
+                    if (result[index].linked_exps ===null) continue;
+                    result[index].linked_exps_names = []
+                    result[index].linked_exps_ids = []
+                    var le = result[index].linked_exps.split(",")
+                    for (let str_index = 0; str_index < le.length; str_index++) 
+                    {
+                        const element = le[str_index];
+                        var e = element.split("**n**")
+                        result[index].linked_exps_ids.push(e[0]) 
+                    
+                        result[index].linked_exps_names.push(e[1])
+                    }
+                  
+                    console.log(result);
+                }
                 con.end()
                 res.status(200)
                 return res.json(result)
@@ -47,12 +93,6 @@ function GetSamplesByUserId(req,res) {
 }
 
 function GetSamplesByUserIdAndExperimentId(req,res) {
-    var query =     "SELECT * FROM ("+
-                    "SELECT * FROM daphne.samples_list as s "+ 
-                    "INNER JOIN (SELECT login_name, user_id  FROM daphne.users)  as U ON U.user_id = sample_owner_id "+  
-                    "WHERE sample_owner_id = " +req.headers.sample_owner_id +
-                    ") AS S"
-
     var query = "SELECT samples_list.*, users.login_name FROM daphne.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
     "WHERE sample_owner_id = "+req.headers.sample_owner_id+
@@ -90,13 +130,16 @@ function GetSamplesByUserIdAndExperimentId(req,res) {
     }
 }
 
-
+function CreatTest(req) {
+    console.log(req.body);
+    
+}
 
 function CreateSample(req,res) {
     var query = "INSERT INTO samples_list(sample_owner_id, sample_name, sample_doi, sample_added_on)"
                 + " VALUES(?,?,?, now())"
     sampleDoi = authen.GenerateRandomDOI(req.body.sample_name) 
-    var values = [req.headers.sample_owner_id, req.body.sample_name, sampleDoi]
+    var values = [req.headers.owner_id, req.body.sample_name, sampleDoi]
     try {
         var con = dbCon.handleDisconnect()
         con.query(query, values, function (err, result) {
@@ -111,9 +154,15 @@ function CreateSample(req,res) {
                 );
             }
             else {
-                con.end()
-                res.status(200);
-                return res.json(result.insertId)
+                MongoAddSample(result.insertId, sampleDoi)
+                .then(
+                    r => {
+                        con.end()
+                        res.status(200);
+                        return res.json(result.insertId)
+                    }
+                )
+                
             }
         })
     }
@@ -122,6 +171,40 @@ function CreateSample(req,res) {
         return res.json(error);
     }
 }
+
+function GetSampleById(req,res) {
+    var query = "SELECT samples_list.*, users.login_name FROM daphne.samples_list "+
+    " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
+    "WHERE sample_id = "+req.headers.object_id
+
+    try 
+    {
+        var con = dbCon.handleDisconnect()
+        con.query(query, function (err, result) {
+            if (err) {
+                console.log(err)
+                con.end()
+                return res.json(err);
+            }
+            if (result[0] === undefined ) {
+                con.end()
+                res.status(200)
+                return res.json(-1004);
+            } 
+            else { 
+                con.end()
+                res.status(200)
+                return res.json(result[0])
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    }
+}
+
 
 function UpdateSampleById(req,res) {
     
@@ -135,8 +218,9 @@ module.exports =
 { 
     GetSamplesByUserId, 
     GetSamplesByUserIdAndExperimentId,
-    //SaveAttachedFile,
+    GetSampleById,
     CreateSample,
     UpdateSampleById,
-    DeleteSampleById
+    DeleteSampleById, 
+    CreatTest
 };
