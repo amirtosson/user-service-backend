@@ -4,8 +4,10 @@ const router = express.Router();
 const dataFilesCtrl = require('../controllers/data-files.controllers');
 
 router.get('/datafiles/getdatafileslist', dataFilesCtrl.GetDataFilessByUserId);
+router.get('/data_files/getdata_filebyid', dataFilesCtrl.GetDataFilesById);
 
 
+router.post('/datafiles/uploadfile', dataFilesCtrl.uploadS3.single('file'), dataFilesCtrl.UploadSingleFile);
 // router.post('/uploadfile', datasetCtrl.uploadS3.single('file'), datasetCtrl.UploadSingleFile);
 // router.post('/addfiletodatabases', datasetCtrl.AddFileToDatabases);
 // // router.post('/saveattach', upload_attach.single('file'), datasetCtrl.SaveAttachedFile);

@@ -64,18 +64,18 @@ async function MongoDeleteMetadataItem(item_name, item_value, data_file_doi) {
 
 // ========================= AWS-bucket Config and function ====================================
 const s3 = new AWS.S3({
-    accessKeyId: "AKIA6ENB2UFPJAG7WPEL",
-    secretAccessKey: "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",
+    accessKeyId: "AKIA6ENB2UFPLCXFEMXR",
+    secretAccessKey: "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",
     region:"eu-central-1"
   });
   
 let AWSBucketStorage = multerS3({
-    acl: 'public-read',
     s3,
-    bucket: 'daphne-angular',
+    bucket: 'xpcs-datafiles',
     key: function(req, file, cb) {
+        console.log(file.originalname);
         newDOI = doi.GenerateNewDatasetDOI(file.originalname)
-        cb(null,'datasets/'+file.originalname);
+        cb(null,'data-files/'+file.originalname);
      }
     })
 // ====================================== Main APIS========================================
@@ -114,28 +114,97 @@ function GetDataFilessByUserId(req,res) {
     }
 }
 
+function GetDataFilesById(req,res) {
+    var query = "SELECT data_files_list.*, users.login_name  FROM daphne.data_files_list "+
+    " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
+    " WHERE data_file_id = " +req.headers.object_id;
+    try 
+    {
+        var con = dbCon.handleDisconnect()
+        con.query(query, function (err, result) {
+            if (err) {
+                console.log(err)
+                con.end()
+                return res.json(err);
+            }
+            if (result[0] === undefined ) {
+                con.end()
+                res.status(200)
+                return res.json(
+                       -1004
+                );
+            } 
+            else {
+                con.end()
+                res.status(200)
+                return res.json(result[0])
+            }
+        })
+    }
+    catch (error) 
+    {   
+        con.end()
+        return res.json(error);
+    }
+}
+
 const uploadS3 = multer({ storage: AWSBucketStorage })
 
 function UploadSingleFile(req,res, next) 
 {
     const file = req.file;
+    const file_name = req.file_name
+    console.log(file.originalname);
+    console.log(req.body.file_name);
+    
+     var PID = ""
+     var DOI = doi.GenerateNewDatasetDOI(file.originalname)
+     var params = {
+         Bucket: 'xpcs-datafiles/data-files',
+         Key:file.originalname
+       };
+     s3.getSignedUrl('putObject', params, function (err, url) {
+         PID = url.split('?')[0]
+        var query = "INSERT INTO daphne.data_files_list (data_file_name, data_file_owner_id, data_file_doi, data_file_linked_dataset_instance_id, data_file_linked_experiment_id, data_file_pid, data_file_added_on)"    
+            + " VALUES(?,?,?,?,?,?, now())"
 
-    var PID = ""
-    var DOI = doi.GenerateNewDatasetDOI(file.originalname)
-    var params = {
-        Bucket: 'daphne-angular/datasets',
-        Key:file.originalname
-      };
-    s3.getSignedUrl('putObject', params, function (err, url) {
-        PID = url.split('?')[0]
-        return res.json({
-            "pid":PID, 
-            "doi": DOI, 
-            "file_name":file.originalname
-        })
-
-    })
+        var values = [req.body.file_name, 
+            req.body.data_file_owner_id, 
+            DOI, 
+            req.body.data_file_linked_dataset_instance_id,
+            req.body.data_file_linked_experiment_id,
+            PID
+        ]
+        try 
+        {
+            var con = dbCon.handleDisconnect()
+            con.query(query, values, function (err, result) {
+                if (err) {
+                    console.log(err)
+                    con.end()
+                    return res.json(err);
+                }
+                if (result === undefined ) {
+                    con.end()
+                    res.status(200)
+                    return res.json(-1004);
+                } 
+                else { 
+                    con.end()
+                    res.status(200)
+                    return res.json(result.insertId)
+                }
+            })
+        }
+        catch (error) 
+        {   
+            con.end()
+            return res.json(error);
+        }
+     })
 }
+
+
 
 // function AddFileToDatabases(req,res) 
 // {    
@@ -279,12 +348,11 @@ function UploadSingleFile(req,res, next)
 
 module.exports = 
 { 
-    //UploadSingleFile, 
-    //SaveAttachedFile,
-    //DeleteDatasetByDOI,
+    UploadSingleFile, 
     GetDataFilessByUserId,
+    GetDataFilesById,
     //AddFileToDatabases,
-    //uploadS3, 
+    uploadS3, 
    // GetMetadataByDatasetDoi, 
     //AddMetadataItem, 
     //DeleteMetadataByDatasetDoi, 

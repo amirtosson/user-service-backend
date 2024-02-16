@@ -70,7 +70,6 @@ const s3 = new AWS.S3({
   });
   
 let AWSBucketStorage = multerS3({
-    acl: 'public-read',
     s3,
     bucket: 'daphne-angular',
     key: function(req, file, cb) {

@@ -13,27 +13,6 @@ async function MongoAddSample(sample_id, sample_doi) {
     return AddResult;
   }
 
-async function MongoGetSampleMetadata(sample_id) {
-    const db = await mongoCon.EstablishConnection()
-    var mangoquery = { "sample_id": sample_id };
-    const findResult = await db.collection("samples").find(mangoquery).toArray(function (err, sampleMetadata) {
-        return sampleMetadata;
-    })
-    return findResult;
-}
-
-
-async function MongoAddSampleMetadataItem(sample_id) {
-    const db = await mongoCon.EstablishConnection()
-    var obj = {}
-    obj[item_name]= item_value
-    var newvalues = { $set: obj};
-    var mangoquery = {"sample_id":sample_id};
-    const findResult =  await db.collection("samples").updateOne(mangoquery, newvalues,function(err, resData) {
-        return resData;
-    })
-    return findResult;
-}
 
 // ============================== Main Functions ==============================
 
