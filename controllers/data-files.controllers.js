@@ -64,8 +64,8 @@ async function MongoDeleteMetadataItem(item_name, item_value, data_file_doi) {
 
 // ========================= AWS-bucket Config and function ====================================
 const s3 = new AWS.S3({
-    accessKeyId: "AKIA6ENB2UFPLCXFEMXR",
-    secretAccessKey: "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",
+    accessKeyId: process.env.AWS_accessKeyId,
+    secretAccessKey: process.env.AWS_secretAccessKey,
     region:"eu-central-1"
   });
   
