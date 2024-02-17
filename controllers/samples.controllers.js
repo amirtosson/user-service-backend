@@ -55,8 +55,6 @@ function GetSamplesByUserId(req,res) {
                     
                         result[index].linked_exps_names.push(e[1])
                     }
-                  
-                    console.log(result);
                 }
                 con.end()
                 res.status(200)

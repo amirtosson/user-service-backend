@@ -8,15 +8,16 @@ const { exec } = require("child_process");
 
 
 // ======================MongoDB functions ========================
-async function MongoAddDataset(data_file_doi, data_file_name, abstract, pub_doi, pub_title) {
+async function MongoAddUploadedFile(data_file_doi, data_file_id) 
+{
     const db = await mongoCon.EstablishConnection()
-    var myobj = { data_file_doi: data_file_doi, data_file_name: data_file_name, abstract:abstract, publication_doi:pub_doi, publication_title:pub_title};
+    var myobj = { data_file_doi: data_file_doi, data_file_id: data_file_id};
 
-    const AddResult =  await db.collection("datasets_metadata").insertOne(myobj, function(err, res) {
+    const AddResult =  await db.collection("data_files").insertOne(myobj, function(err, res) {
         return res;
     })
     return AddResult;
-  }
+}
 
 async function MongoGetMetadataByDatasetDoi(data_file_doi) {
     const db = await mongoCon.EstablishConnection()
@@ -66,14 +67,13 @@ async function MongoDeleteMetadataItem(item_name, item_value, data_file_doi) {
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_accessKeyId,
     secretAccessKey: process.env.AWS_secretAccessKey,
-    region:"eu-central-1"
+    region:process.env.AWS_BUCKET_region
   });
   
 let AWSBucketStorage = multerS3({
     s3,
-    bucket: 'xpcs-datafiles',
+    bucket: process.env.AWS_BUCKET_NAME,
     key: function(req, file, cb) {
-        console.log(file.originalname);
         newDOI = doi.GenerateNewDatasetDOI(file.originalname)
         cb(null,'data-files/'+file.originalname);
      }
@@ -153,16 +153,14 @@ const uploadS3 = multer({ storage: AWSBucketStorage })
 function UploadSingleFile(req,res, next) 
 {
     const file = req.file;
-    const file_name = req.file_name
-    console.log(file.originalname);
-    console.log(req.body.file_name);
-    
-     var PID = ""
-     var DOI = doi.GenerateNewDatasetDOI(file.originalname)
-     var params = {
-         Bucket: 'xpcs-datafiles/data-files',
-         Key:file.originalname
-       };
+    const file_name = req.file_name 
+    var PID = ""
+    var DOI = doi.GenerateNewDatasetDOI(file.originalname)
+    var params = 
+    {
+        Bucket: process.env.AWS_BUCKET_NAME+'/data-files',
+        Key:file.originalname
+    };
      s3.getSignedUrl('putObject', params, function (err, url) {
          PID = url.split('?')[0]
         var query = "INSERT INTO daphne.data_files_list (data_file_name, data_file_owner_id, data_file_doi, data_file_linked_dataset_instance_id, data_file_linked_experiment_id, data_file_pid, data_file_added_on)"    
@@ -178,6 +176,7 @@ function UploadSingleFile(req,res, next)
         try 
         {
             var con = dbCon.handleDisconnect()
+
             con.query(query, values, function (err, result) {
                 if (err) {
                     console.log(err)
@@ -190,9 +189,15 @@ function UploadSingleFile(req,res, next)
                     return res.json(-1004);
                 } 
                 else { 
-                    con.end()
-                    res.status(200)
-                    return res.json(result.insertId)
+                    MongoAddUploadedFile(DOI,result.insertId)
+                    .then(()=>{
+                        con.end()
+                        res.status(200)
+                        return res.json(result.insertId)
+                    }
+
+                    )
+
                 }
             })
         }
