@@ -114,7 +114,7 @@ function GetDataFilessByUserId(req,res) {
     }
 }
 
-function GetDataFilesById(req,res) {
+function GetDataFileById(req,res) {
     var query = "SELECT data_files_list.*, users.login_name  FROM daphne.data_files_list "+
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " WHERE data_file_id = " +req.headers.object_id;
@@ -355,7 +355,7 @@ module.exports =
 { 
     UploadSingleFile, 
     GetDataFilessByUserId,
-    GetDataFilesById,
+    GetDataFileById,
     //AddFileToDatabases,
     uploadS3, 
    // GetMetadataByDatasetDoi, 

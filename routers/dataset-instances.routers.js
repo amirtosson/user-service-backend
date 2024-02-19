@@ -4,6 +4,9 @@ const diCtrl = require('../controllers/dataset-instances.controllers');
 
 router.get('/datasetinstances/getdatasetinstanceslistlinkedexp', diCtrl.GetDatasetInstancesByUserIdAndExperimentId);
 router.get('/datasetinstances/getdatasetinstanceslist', diCtrl.GetDatasetInstancesByUserId);
+router.get('/dataset_instances/getdataset_instancebyid', diCtrl.GetDatasetInstanceById);
+
+router.post('/dataset_instances/create', diCtrl.CreateDatasetInstance);
 
 
 //router.post('/experiments/create', expCtrl.CreateExperiment);

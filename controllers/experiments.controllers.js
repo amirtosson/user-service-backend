@@ -1,5 +1,6 @@
 const dbCon = require("../config/db-connections")
 const mongoCon = require("../config/mongo-connections")
+const authen = require("../config/authorization")
 
 
 async function MongoAddExperiment(experiment_id, experiment_doi) {
@@ -74,7 +75,7 @@ function CreateExperiment(req,res) {
     
     
     var query = "INSERT INTO experiments_list(experiment_owner_id, experiment_name, experiment_facility_id,experiment_start_date, experiment_end_date, experiment_added_on)"
-                + " VALUES(?,?,?,?,?, now())"
+                + " VALUES(?,?,?,?,?, DATE_FORMAT(CURDATE(),'%d-%m-%y'))"
     expDoi = authen.GenerateRandomDOI(req.body.experiment_name)
     var values = 
     [req.headers.owner_id, 
