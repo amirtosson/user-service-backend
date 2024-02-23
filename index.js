@@ -20,6 +20,7 @@ const expRouters = require("./routers/experiments.routers")
 const diRouters = require("./routers/dataset-instances.routers")
 const dataFilesRouters = require("./routers/data-files.routers")
 const sampRouters = require("./routers/samples.routers")
+const linkRouters = require("./routers/linking-objects.routers")
 const gRouters = require("./routers/general.routers")
 
 // LIFE SPIN METADATA
@@ -35,6 +36,7 @@ app.use(expRouters)
 app.use(diRouters)
 app.use(dataFilesRouters)
 app.use(sampRouters)
+app.use(linkRouters)
 app.use(gRouters)
 
 app.use(sampMDRouters)

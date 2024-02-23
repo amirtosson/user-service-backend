@@ -75,7 +75,7 @@ function CreateExperiment(req,res) {
     
     
     var query = "INSERT INTO experiments_list(experiment_owner_id, experiment_name, experiment_facility_id,experiment_start_date, experiment_end_date, experiment_added_on)"
-                + " VALUES(?,?,?,?,?, DATE_FORMAT(CURDATE(),'%d-%m-%y'))"
+                + " VALUES(?,?,?,?,?, now())"
     expDoi = authen.GenerateRandomDOI(req.body.experiment_name)
     var values = 
     [req.headers.owner_id, 

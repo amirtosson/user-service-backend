@@ -115,6 +115,15 @@ function CreatTest(req) {
 function CreateSample(req,res) {
     var query = "INSERT INTO samples_list(sample_owner_id, sample_name, sample_doi, sample_added_on)"
                 + " VALUES(?,?,?, now())"
+
+    var query_links = ""
+    if(req.body.link){
+         query_links = "INSERT INTO link_exp_samples (link_exp_id, link_sample_id, link_exp_name, link_sample_name)" +
+        " SELECT ? AS link_exp_id, ? AS link_sample_id, experiment_name AS link_exp_name, ? AS link_sample_name" +
+        " FROM daphne.experiments_list WHERE experiment_id = ?"  
+    }
+
+
     sampleDoi = authen.GenerateRandomDOI(req.body.sample_name) 
     var values = [req.headers.owner_id, req.body.sample_name, sampleDoi]
     try {
@@ -134,9 +143,21 @@ function CreateSample(req,res) {
                 MongoAddSample(result.insertId, sampleDoi)
                 .then(
                     r => {
-                        con.end()
-                        res.status(200);
-                        return res.json(result.insertId)
+                        if (req.body.link) {
+                            var values_links = [req.body.link, Number(result.insertId), req.body.sample_name,Number(req.body.link)]
+                            con.query(query_links, values_links, function (err, result_l){
+                                if (err) console.log( err);
+                                con.end()
+                                res.status(200);
+                                return res.json(result.insertId)
+                            })
+                        } else {
+                            con.end()
+                            res.status(200);
+                            return res.json(result.insertId)
+                        }
+
+   
                     }
                 )
                 
@@ -150,9 +171,13 @@ function CreateSample(req,res) {
 }
 
 function GetSampleById(req,res) {
-    var query = "SELECT samples_list.*, users.login_name FROM daphne.samples_list "+
+
+
+    var query = "SELECT *, GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name) as linked_experiments FROM daphne.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
-    "WHERE sample_id = "+req.headers.object_id
+    "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_sample_id = samples_list.sample_id "+
+    "WHERE sample_id = "+req.headers.object_id + " group by sample_id"
+
 
     try 
     {
@@ -169,6 +194,23 @@ function GetSampleById(req,res) {
                 return res.json(-1004);
             } 
             else { 
+
+                for (let index = 0; index < result.length; index++) 
+                {
+                    if (result[index].linked_experiments ===null) continue;
+                    result[index].linked_exps_names = []
+                    result[index].linked_exps_ids = []
+                    var ls = result[index].linked_experiments.split(",")
+                    for (let str_index = 0; str_index < ls.length; str_index++) 
+                    {
+                        const element = ls[str_index];
+                        var s = element.split("**n**")
+                        result[index].linked_exps_ids.push(s[0]) 
+                    
+                        result[index].linked_exps_names.push(s[1])
+                    }
+                    
+                }
                 con.end()
                 res.status(200)
                 return res.json(result[0])
