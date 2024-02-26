@@ -52,10 +52,11 @@ function GetDatasetInstancesByUserIdAndExperimentId(req,res) {
 }
 
 function GetDatasetInstanceById(req,res) {
-    var query = "SELECT dataset_instances_list.*, users.login_name  FROM daphne.dataset_instances_list "+
+    var query = "SELECT dataset_instances_list.*, experiments_list.experiment_name, users.login_name  FROM daphne.dataset_instances_list "+
     " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
+    " LEFT JOIN experiments_list ON experiments_list.experiment_id = dataset_instances_list.dataset_instance_linked_exp_id " +
     " WHERE dataset_instance_id = " +req.headers.object_id;
-    try 
+    try  
     {
         var con = dbCon.handleDisconnect()
         con.query(query, function (err, result) {
@@ -86,9 +87,9 @@ function GetDatasetInstanceById(req,res) {
 }
 
 function GetDatasetInstancesByUserId(req,res) {
-    var query = "SELECT dataset_instances_list.*, experiments_list.experiment_name, users.login_name  FROM daphne.dataset_instances_list "+
+    var query = "SELECT dataset_instances_list.*, experiments_list.experiment_name,experiments_list.experiment_id, users.login_name  FROM daphne.dataset_instances_list "+
     " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
-    " INNER JOIN experiments_list ON experiments_list.experiment_id = dataset_instances_list.dataset_instance_linked_exp_id " +
+    " LEFT JOIN experiments_list ON experiments_list.experiment_id = dataset_instances_list.dataset_instance_linked_exp_id " +
     "WHERE dataset_instance_owner_id = "+req.headers.dataset_instance_owner_id
     try 
     {

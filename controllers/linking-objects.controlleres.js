@@ -3,8 +3,6 @@ const dbCon = require("../config/db-connections")
 
 function CreateExperimentToSampleLink(req,res) {
 
-    console.log(req.body);
-
     var q_insersion="";
     var parent_key;
     if (req.body.link_parent == "sampletoexp") {
@@ -46,7 +44,6 @@ function CreateExperimentToSampleLink(req,res) {
              } 
              else {
                 con.query(q_insersion, function (err_i, result_i) {
-                    console.log(result_i)
                     if (err) {
                         console.log(err_i)
                         con.end()
@@ -74,51 +71,75 @@ function CreateExperimentToSampleLink(req,res) {
          con.end()
          return res.json(error);
      }
-
-    // var parent_key;
-    // var parent_id;
-    // if (eq.body.link_parent == "sampletoexp") {
-    //     parent_key = "link_sample_id"
-    //     parent_id =  req.body.link_sample_id
-    // } else {
-    //     parent_key = "link_exp_id"
-    //     parent_id =  req.body.link_exp_id
-    // }
-    
-    // var query = query +"DELETE FROM link_exp_samples WHERE ? = ? INSERT INTO link_exp_samples(link_exp_id, link_exp_name, link_sample_id, link_sample_name)"
-    // + " VALUES(?,?,?,?)"
-    // var values =[parent_key, parent_id, req.body.link_exp_id, req.body.link_exp_name, req.body.link_sample_id, req.body.link_sample_name]
-    // try 
-    // {
-    //     var con = dbCon.handleDisconnect()
-    //     con.query(query, values,function (err, result) {
-    //         if (err) {
-    //             console.log(err)
-    //             con.end()
-    //             return res.json(err);
-    //         }
-    //         if (result === undefined ) {
-    //             con.end()
-    //             res.status(200)
-    //             return res.json(-1003);
-    //         } 
-    //         else {
-    //             con.end()
-    //             res.status(200)
-    //             return res.json(result)
-    //         }
-    //     })
-    // }
-    // catch (error) 
-    // {   
-    //     con.end()
-    //     return res.json(error);
-    // }
 }
 
+
+function CreateExperimentToDatasetInstanceLink(req,res) {
+    var query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id = ?"
+    var values = req.body.link_parent =='expotoinstance'?[ req.body.link_parent_id, req.body.link_child_id[0]] :[req.body.link_child_id[0], req.body.link_parent_id]
+    try {
+        var con = dbCon.handleDisconnect()
+        con.query(query, values, function (err, result) {
+            if (err) throw err;
+            if (result === undefined) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    {
+                        "error": 'No'
+                    }
+                );
+            }
+            else {
+           
+                con.end()
+                res.status(200);
+                return res.json(result.insertId)
+            }
+        })
+    }
+    catch (error) {
+        con.end()
+        return res.json(error);
+    }
+}
+
+function CreateDatasetInstanceToFataFileLink(req,res) {
+    var query = "UPDATE data_files_list SET data_file_linked_dataset_instance_id = ?, data_file_linked_experiment_id = "+ 
+    "(SELECT dataset_instances_list.dataset_instance_linked_exp_id FROM daphne.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
+    " WHERE data_files_list.data_file_id = ?"
+    var values = [req.body.link_parent_id, req.body.link_parent_id, req.body.link_child_id[0]]
+    try {
+        var con = dbCon.handleDisconnect()
+        con.query(query, values, function (err, result) {
+            if (err) throw err;
+            if (result === undefined) {
+                con.end()
+                res.status(404)
+                return res.json(
+                    {
+                        "error": 'No'
+                    }
+                );
+            }
+            else {
+           
+                con.end()
+                res.status(200);
+                return res.json(result.insertId)
+            }
+        })
+    }
+    catch (error) {
+        con.end()
+        return res.json(error);
+    }
+}
 
 
 module.exports = 
 { 
-    CreateExperimentToSampleLink, 
+    CreateExperimentToSampleLink,
+    CreateExperimentToDatasetInstanceLink,
+    CreateDatasetInstanceToFataFileLink 
 }

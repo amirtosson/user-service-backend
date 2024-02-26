@@ -16,7 +16,8 @@ async function MongoAddExperiment(experiment_id, experiment_doi) {
 // ============================== Main Functions ==============================
 
 function GetExperimentsByUserId(req,res) {
-    var query = "SELECT *, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
+    var query = "SELECT experiments_list.*, facility_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
+    " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
     "WHERE experiment_owner_id = "+req.headers.experiment_owner_id + " group by experiment_id"
@@ -46,7 +47,7 @@ function GetExperimentsByUserId(req,res) {
                     if (result[index].linked_samples ===null) continue;
                     result[index].linked_samples_names = []
                     result[index].linked_samples_ids = []
-                    var ls = result[index].linked_samples.split(",")
+                    var ls = result[index].linked_samples.split("-*-NN-*-")
                     for (let str_index = 0; str_index < ls.length; str_index++) 
                     {
                         const element = ls[str_index];
@@ -80,7 +81,7 @@ function CreateExperiment(req,res) {
     var values = 
     [req.headers.owner_id, 
         req.body.experiment_name, 
-        1,
+        req.body.experiment_facility_id,
         req.body.experiment_start_date,
         req.body.experiment_end_date]
     try {
@@ -118,8 +119,9 @@ function UpdateExperimentById(req,res) {
 }
 
 function GetExperimentById(req,res) {
-    var query = "SELECT experiments_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
+    var query = "SELECT experiments_list.*, facility_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
+    " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
     "WHERE experiment_id = "+req.headers.object_id + " group by experiment_id"
     try 
