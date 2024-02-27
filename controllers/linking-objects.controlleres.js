@@ -30,8 +30,6 @@ function CreateExperimentToSampleLink(req,res) {
      {
          var con = dbCon.handleDisconnect()
          con.query(query_d,function (err, result) {
-            console.log(result)
-
              if (err) {
                  console.log(err)
                  con.end()
@@ -75,11 +73,34 @@ function CreateExperimentToSampleLink(req,res) {
 
 
 function CreateExperimentToDatasetInstanceLink(req,res) {
-    var query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id = ?"
-    var values = req.body.link_parent =='expotoinstance'?[ req.body.link_parent_id, req.body.link_child_id[0]] :[req.body.link_child_id[0], req.body.link_parent_id]
+    var query;
+    var values;
+    if (req.body.link_parent =='exptoinstance') {
+
+        if (req.body.link_child_id.length>0) {
+            query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id IN ("
+            for (let index = 0; index <req.body.link_child_id.length; index++) {
+                const element = req.body.link_child_id[index];
+                query = query + element +","
+            }
+            query = query.slice(0,-1) + ")"
+            
+        }
+        else{
+            query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = -1 WHERE dataset_instance_linked_exp_id =?" 
+        }
+        values = [ req.body.link_parent_id]
+       
+        
+    } else {
+        query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id = ?"
+        values = [req.body.link_child_id[0], req.body.link_parent_id]
+    }
+
     try {
         var con = dbCon.handleDisconnect()
         con.query(query, values, function (err, result) {
+            
             if (err) throw err;
             if (result === undefined) {
                 con.end()
@@ -108,7 +129,7 @@ function CreateDatasetInstanceToFataFileLink(req,res) {
     var query = "UPDATE data_files_list SET data_file_linked_dataset_instance_id = ?, data_file_linked_experiment_id = "+ 
     "(SELECT dataset_instances_list.dataset_instance_linked_exp_id FROM daphne.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
     " WHERE data_files_list.data_file_id = ?"
-    var values = [req.body.link_parent_id, req.body.link_parent_id, req.body.link_child_id[0]]
+    var values = req.body.link_parent =='instancetofile' ? [req.body.link_parent_id, req.body.link_parent_id, req.body.link_child_id[0]]:[req.body.link_child_id[0], req.body.link_child_id[0], req.body.link_parent_id]
     try {
         var con = dbCon.handleDisconnect()
         con.query(query, values, function (err, result) {
