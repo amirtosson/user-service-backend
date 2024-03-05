@@ -74,14 +74,15 @@ let AWSBucketStorage = multerS3({
     s3,
     bucket: process.env.AWS_BUCKET_NAME,
     key: function(req, file, cb) {
-        newDOI = doi.GenerateNewDatasetDOI(file.originalname)
+        //newDOI = doi.GenerateNewDatasetDOI(file.originalname)
         cb(null,'data-files/'+file.originalname);
      }
     })
 // ====================================== Main APIS========================================
 
 function GetDataFilessByUserId(req,res) {
-    var query = "SELECT data_files_list.*, experiments_list.experiment_name,experiments_list.experiment_id, dataset_instances_list.dataset_instance_name, dataset_instances_list.dataset_instance_id, users.login_name  FROM daphne.data_files_list "+
+    var query = "SELECT data_files_list.*, DATE_FORMAT(data_files_list.data_file_added_on, '%d.%m.%Y') as 'data_file_added_on', "+ 
+    "experiments_list.experiment_name,experiments_list.experiment_id, dataset_instances_list.dataset_instance_name, dataset_instances_list.dataset_instance_id, users.login_name  FROM daphne.data_files_list "+
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = data_files_list.data_file_linked_experiment_id" +
     " LEFT JOIN dataset_instances_list ON dataset_instances_list.dataset_instance_id = data_files_list.data_file_linked_dataset_instance_id" +
@@ -116,11 +117,16 @@ function GetDataFilessByUserId(req,res) {
     }
 }
 
+
+
 function GetDataFileById(req,res) {
-    var query = "SELECT data_files_list.*, experiments_list.experiment_name,experiments_list.experiment_id, users.login_name  FROM daphne.data_files_list "+
+    var query = "SELECT data_files_list.*, experiments_list.experiment_name,experiments_list.experiment_id, users.login_name, "+
+    " DATE_FORMAT(data_files_list.data_file_added_on, '%d.%m.%Y') as 'data_file_added_on', "+
+    " dataset_instances_list.dataset_instance_id, dataset_instances_list.dataset_instance_name FROM daphne.data_files_list "+
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = data_files_list.data_file_linked_experiment_id" +
-    " WHERE data_file_id = " +req.headers.object_id;
+    " LEFT JOIN dataset_instances_list ON dataset_instances_list.dataset_instance_id = data_files_list.data_file_linked_dataset_instance_id" +
+    " WHERE data_file_id in (" +req.headers.object_id+")"
     try 
     {
         var con = dbCon.handleDisconnect()
@@ -140,7 +146,7 @@ function GetDataFileById(req,res) {
             else {
                 con.end()
                 res.status(200)
-                return res.json(result[0])
+                return res.json(result)
             }
         })
     }

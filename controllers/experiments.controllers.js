@@ -16,7 +16,10 @@ async function MongoAddExperiment(experiment_id, experiment_doi) {
 // ============================== Main Functions ==============================
 
 function GetExperimentsByUserId(req,res) {
-    var query = "SELECT experiments_list.*, facility_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
+    var query = "SELECT experiments_list.*, facility_list.*, DATE_FORMAT(experiments_list.experiment_added_on, '%d.%m.%Y') as 'experiment_added_on', "+
+    " DATE_FORMAT(experiments_list.experiment_start_date, '%d.%m.%Y') as 'experiment_start_date', "+
+    " DATE_FORMAT(experiments_list.experiment_end_date, '%d.%m.%Y') as 'experiment_end_date', "+
+    " users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
     " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
@@ -118,12 +121,17 @@ function UpdateExperimentById(req,res) {
     
 }
 
+
 function GetExperimentById(req,res) {
-    var query = "SELECT experiments_list.*, facility_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name) as linked_samples FROM daphne.experiments_list "+
+    if(!req.headers.object_id || req.headers.object_id.length<1)  return res.json([])
+    var query = "SELECT experiments_list.*, facility_list.*, DATE_FORMAT(experiments_list.experiment_added_on, '%d.%m.%Y') as 'experiment_added_on', "+
+    " DATE_FORMAT(experiments_list.experiment_start_date, '%d.%m.%Y') as 'experiment_start_date', "+
+    " DATE_FORMAT(experiments_list.experiment_end_date, '%d.%m.%Y') as 'experiment_end_date', "+
+    " users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
     " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
-    "WHERE experiment_id = "+req.headers.object_id + " group by experiment_id"
+    "WHERE experiment_id in ("+req.headers.object_id + ") group by experiment_id"
     try 
     {
         var con = dbCon.handleDisconnect()
@@ -149,7 +157,7 @@ function GetExperimentById(req,res) {
                 if (result[0].linked_samples){
                     result[0].linked_samples_names = []
                     result[0].linked_samples_ids = []
-                    var ls = result[0].linked_samples.split(",")
+                    var ls = result[0].linked_samples.split("-*-NN-*-")
                     for (let str_index = 0; str_index < ls.length; str_index++) 
                     {
                         const element = ls[str_index];
@@ -162,7 +170,7 @@ function GetExperimentById(req,res) {
                 }
                 con.end()
                 res.status(200)
-                return res.json(result[0])
+                return res.json(result)
             }
 
         })
@@ -173,7 +181,7 @@ function GetExperimentById(req,res) {
         return res.json(error);
     }
 }
-
+ 
 function DeleteExperimentById(req,res) {
     
 }

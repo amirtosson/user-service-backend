@@ -52,10 +52,12 @@ function GetDatasetInstancesByUserIdAndExperimentId(req,res) {
 }
 
 function GetDatasetInstanceById(req,res) {
-    var query = "SELECT dataset_instances_list.*, experiments_list.experiment_name, users.login_name  FROM daphne.dataset_instances_list "+
+    var query = "SELECT dataset_instances_list.*, DATE_FORMAT(dataset_instances_list.dataset_instance_added_on, '%d.%m.%Y') as 'dataset_instance_added_on',"+
+    " DATE_FORMAT(dataset_instances_list.dataset_instance_last_modified_on, '%d.%m.%Y') as 'dataset_instance_last_modified_on', "+
+    " experiments_list.experiment_name, users.login_name  FROM daphne.dataset_instances_list "+
     " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = dataset_instances_list.dataset_instance_linked_exp_id " +
-    " WHERE dataset_instance_id = " +req.headers.object_id;
+    " WHERE dataset_instance_id in(" +req.headers.object_id+")";
     try  
     {
         var con = dbCon.handleDisconnect()
@@ -75,7 +77,7 @@ function GetDatasetInstanceById(req,res) {
             else {
                 con.end()
                 res.status(200)
-                return res.json(result[0])
+                return res.json(result)
             }
         })
     }
@@ -86,8 +88,11 @@ function GetDatasetInstanceById(req,res) {
     }
 }
 
+
 function GetDatasetInstancesByUserId(req,res) {
-    var query = "SELECT dataset_instances_list.*, experiments_list.experiment_name,experiments_list.experiment_id, users.login_name  FROM daphne.dataset_instances_list "+
+    var query = "SELECT dataset_instances_list.*, DATE_FORMAT(dataset_instances_list.dataset_instance_added_on, '%d.%m.%Y') as 'dataset_instance_added_on',"+
+    " DATE_FORMAT(dataset_instances_list.dataset_instance_last_modified_on, '%d.%m.%Y') as 'dataset_instance_last_modified_on', "+
+    " experiments_list.experiment_name,experiments_list.experiment_id, users.login_name  FROM daphne.dataset_instances_list "+
     " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = dataset_instances_list.dataset_instance_linked_exp_id " +
     "WHERE dataset_instance_owner_id = "+req.headers.dataset_instance_owner_id

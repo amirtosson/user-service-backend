@@ -14,18 +14,22 @@ function CreateExperimentToSampleLink(req,res) {
      }    
 
      var query_d ="DELETE FROM link_exp_samples WHERE "+parent_key + " = "+req.body.link_parent_id
-     
+     var v_insersion = []
      if (req.body.link_child_id.length > 0) {
 
         for (let index = 0; index < req.body.link_child_id.length; index++) {
+        
             const c_id = req.body.link_child_id[index]
             const c_name = req.body.link_child_name[index]
-    
-            q_insersion = q_insersion + "("+req.body.link_parent_id+", '"+req.body.link_parent_name+"', "+c_id+", '"+c_name + "'),"
+            v_insersion.push(req.body.link_parent_id)
+            v_insersion.push(req.body.link_parent_name)
+            v_insersion.push(c_id)
+            v_insersion.push(c_name)
+            q_insersion = q_insersion + "(?,?,?,?),"
 
          }
          q_insersion = q_insersion.slice(0,-1)
-     }
+     };
      try 
      {
          var con = dbCon.handleDisconnect()
@@ -41,7 +45,7 @@ function CreateExperimentToSampleLink(req,res) {
                  return res.json(-1003);
              } 
              else {
-                con.query(q_insersion, function (err_i, result_i) {
+                con.query(q_insersion, v_insersion, function (err_i, result_i) {
                     if (err) {
                         console.log(err_i)
                         con.end()

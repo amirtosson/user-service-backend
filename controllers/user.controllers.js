@@ -194,7 +194,7 @@ function SignUp(req, res) {
 function HealthTest(req, res) {
     return res.json(
         {
-            "healthy": true
+            "healthy_05.03": true
         }
     )
 }

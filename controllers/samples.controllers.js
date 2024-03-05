@@ -17,7 +17,7 @@ async function MongoAddSample(sample_id, sample_doi) {
 // ============================== Main Functions ==============================
 
 function GetSamplesByUserId(req,res) {
-    var query = "SELECT samples_list.*, users.login_name, GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name) as linked_exps FROM daphne.samples_list "+
+    var query = "SELECT samples_list.*,  DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , users.login_name, GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name SEPARATOR '-*-NN-*-') as linked_exps FROM daphne.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_sample_id = samples_list.sample_id "+
     "WHERE sample_owner_id = "+req.headers.sample_owner_id + " group by sample_id"
@@ -46,7 +46,7 @@ function GetSamplesByUserId(req,res) {
                     if (result[index].linked_exps ===null) continue;
                     result[index].linked_exps_names = []
                     result[index].linked_exps_ids = []
-                    var le = result[index].linked_exps.split(",")
+                    var le = result[index].linked_exps.split("-*-NN-*-")
                     for (let str_index = 0; str_index < le.length; str_index++) 
                     {
                         const element = le[str_index];
@@ -70,7 +70,7 @@ function GetSamplesByUserId(req,res) {
 }
 
 function GetSamplesByUserIdAndExperimentId(req,res) {
-    var query = "SELECT samples_list.*, users.login_name FROM daphne.samples_list "+
+    var query = "SELECT samples_list.*,DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , users.login_name FROM daphne.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
     "WHERE sample_owner_id = "+req.headers.sample_owner_id+
     " AND sample_linked_exp_id = "+req.headers.linked_exp_id
@@ -171,18 +171,16 @@ function CreateSample(req,res) {
 }
 
 function GetSampleById(req,res) {
-
-
-    var query = "SELECT *, GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name) as linked_experiments FROM daphne.samples_list "+
+    if(!req.headers.object_id || req.headers.object_id.length<1)  return res.json([])
+    var query = "SELECT *, DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , GROUP_CONCAT(DISTINCT link_exp_id,'**n**',link_exp_name SEPARATOR '-*-NN-*-') as linked_experiments FROM daphne.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
     "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_sample_id = samples_list.sample_id "+
-    "WHERE sample_id = "+req.headers.object_id + " group by sample_id"
-
+    "WHERE sample_id in ("+req.headers.object_id+") group by sample_id"
 
     try 
     {
         var con = dbCon.handleDisconnect()
-        con.query(query, function (err, result) {
+        con.query(query,  function (err, result) {
             if (err) {
                 console.log(err)
                 con.end()
@@ -200,7 +198,7 @@ function GetSampleById(req,res) {
                     if (result[index].linked_experiments ===null) continue;
                     result[index].linked_exps_names = []
                     result[index].linked_exps_ids = []
-                    var ls = result[index].linked_experiments.split(",")
+                    var ls = result[index].linked_experiments.split("-*-NN-*-")
                     for (let str_index = 0; str_index < ls.length; str_index++) 
                     {
                         const element = ls[str_index];
@@ -213,7 +211,7 @@ function GetSampleById(req,res) {
                 }
                 con.end()
                 res.status(200)
-                return res.json(result[0])
+                return res.json(result)
             }
         })
     }
