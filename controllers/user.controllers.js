@@ -201,9 +201,11 @@ function HealthTest(req, res) {
 }
 
 function LocationGuard(req, res) {
-    const clientIp = req.connection.remoteAddress;
-
+    const clientIp = '::ffff:141.99.126.9'
+    var ip = req.ip
     console.log(clientIp);
+    console.log(ip);
+
     var geo = geoip.lookup(clientIp);
     return res.json(
         {
