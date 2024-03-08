@@ -1,6 +1,7 @@
 const userAuthen = require('../config/authorization')
 const dbCon = require("../config/db-connections")
 const mongoCon = require("../config/mongo-connections")
+//var geoip = require('geoip-lite');
 
 
 // ======================MongoDB functions ========================
@@ -192,6 +193,8 @@ function SignUp(req, res) {
 }
 
 function HealthTest(req, res) {
+    const clientIp = req.ip
+    console.log(clientIp);
     return res.json(
         {
             "healthy_05.03": true

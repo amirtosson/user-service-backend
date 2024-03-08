@@ -66,8 +66,44 @@ function GetMethodsList(req,res) {
     }
 }
 
+function CheckUsernameAvailability(req, res) {
+    var query = "SELECT EXISTS(Select * FROM daphne."+req.headers.object_key+"s_list WHERE "+req.headers.object_key+"_name = ? ) As counts;"
+    var values = [req.headers.object_name]
+    try {
+        var con = dbCon.handleDisconnect()
+        con.query(query, values, function (err, result) {
+            if (err) throw err;
+            res.status(200)
+            if (result[0].counts === 0) {
+                con.end()
+                return res.json(
+                    {
+                        "available": true
+                    }
+                );
+            }
+            else {
+                con.end()
+                return res.json(
+                    {
+                        "available": false
+                    }
+                );
+            }
+        })
+    }
+    catch (error) {
+        con.end()
+        console.log(error)
+        return res.json("Something Wrong");
+    }
+
+}
+
+
 module.exports = 
 { 
+    CheckUsernameAvailability,
     GetFacilitiesList, 
     GetMethodsList
 }
