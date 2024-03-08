@@ -201,7 +201,7 @@ function HealthTest(req, res) {
 }
 
 function LocationGuard(req, res) {
-    const clientIp = '::ffff:141.99.126.9'
+    const clientIp = req.ip
     var ip = req.ip
     console.log(clientIp);
     console.log(ip);
