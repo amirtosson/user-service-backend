@@ -201,8 +201,10 @@ function HealthTest(req, res) {
 }
 
 function LocationGuard(req, res) {
-    const clientIp = req.ip
+    const clientIp = req.header('x-forwarded-for')
     var ip = req.ip
+    console.log(req.header('x-forwarded-for'))
+
     console.log(clientIp);
     console.log(ip);
 
