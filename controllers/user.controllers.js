@@ -210,5 +210,17 @@ function LocationGuard(req, res) {
     )
 }
 
+function ExFELTest(req, res) {
+    const clientIp = req.header('x-forwarded-for')
+    if(clientIp)var geo = geoip.lookup(clientIp);
+    return res.json(
+        {   
+            "location": geo.city,
+            "answer from Siegen": req.body
+        }
+    )
+    
+}
 
-module.exports = { Login, SignUp, CheckUsernameAvailability, HealthTest, LocationGuard};
+
+module.exports = { Login, SignUp, CheckUsernameAvailability, HealthTest, LocationGuard, ExFELTest};
