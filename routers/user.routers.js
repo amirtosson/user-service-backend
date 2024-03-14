@@ -7,7 +7,7 @@ router.post('/signup', userCtrl.SignUp);
 router.post('/checknameavailability', userCtrl.CheckUsernameAvailability);
 router.get('/healthtest', userCtrl.HealthTest);
 router.get('/userlocation', userCtrl.LocationGuard);
-router.get('/external/euxfel/test', userCtrl.ExFELTest);
+router.post('/external/euxfel/test', userCtrl.ExFELTest);
 
 
 module.exports = router;
