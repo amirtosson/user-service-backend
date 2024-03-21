@@ -1,6 +1,8 @@
 const dbCon = require("../config/db-connections")
 const mongoCon = require("../config/mongo-connections")
-const authen = require('../config/authorization');
+const authen = require('../config/authorization')
+
+let sessionId = ""
 
 async function MongoGetMetadata(schema_key, item_id) {
     const db = await mongoCon.EstablishConnection()
@@ -53,14 +55,20 @@ async function MongoGetRecommendedMetadata(schema_key, item_id) {
     return findResult;
 }
 
+async function MongoGetRecommendedMetadataSchemas() {
+    const db = await mongoCon.EstablishConnection()
+    const findResult = await db.collection("recommended_metadata").find().toArray()
+    return findResult;
+}
 
-async function MongoCreateRecommendedMetadata(schema_key, item_id) {
+
+async function MongoCreateRecommendedMetadataSchema(schema_name, schema_version,schema_description) {
     const db = await mongoCon.EstablishConnection()
     var newRMDSchema =
     {
-        schema_title: "sample",
-        schema_version:"v1.0",
-        schema_description:"The recommended metadata items by the DAPHNE4NFDI community.",
+        schema_title: schema_name,
+        schema_version:schema_version,
+        schema_description:schema_description,
         required: [],
         properties :[]
     };
@@ -85,78 +93,91 @@ async function MongoPushRecommendedMetadataItem(schema_key, schema_version, new_
 
 
 
-function GetMDByItemId(req,res) {             
+function GetRecommendedMDSchemas(req,res) {
+
+    console.log(req.headers.token);
+    console.log(req.headers.session_id)
+    console.log(sessionId);
     try 
     {
-        MongoGetMetadata(req.headers.schema_key, req.headers.item_id)
+        MongoGetRecommendedMetadataSchemas()
         .then(md => {
             res.status(200)
             return res.json(md)
         })
-
-           
-    }
-    catch (error) 
-    {   
-        return res.json(error);
-    }
-}
-
-function AddMDItem(req,res) {             
-    try 
-    {  
-         MongoAddMetadataItem(req.body.schema_key, req.headers.item_id, req.body.key, req.body.value )
-         .then(md => {
-             res.status(200)
-             return res.json(md)
-         })
-
-           
-    }
-    catch (error) 
-    {   
-        return res.json(error);
-    }
-}
-
-function DeleteMDItem(req,res) {             
-    try 
-    {
-         MongoDeleteMetadataItem(req.body.schema_key, req.headers.item_id, req.body.key, req.body.value )
-         .then(md => {
-             res.status(200)
-             return res.json(md)
-         })
-
-           
-    }
-    catch (error) 
-    {   
-        return res.json(error);
-    }
-}
-
-
-function GetRecommendedMD(req,res) {
-    
-}
-
-function CreateRecommendedMD(req,res) {
-    if (req.headers.token === "317db886-f583-4050-8f85-16650bcdba21") {
-        try 
-    {
-         MongoCreateRecommendedMetadata()
-         .then(md => {
-             res.status(200)
-             return res.json(md)
-         })
-
-           
+        
     }
     catch (error) 
     {   
         return res.json(error);
     } 
+
+}
+
+function AuthenticateUser(req,res) {
+    if (req.headers.token) {
+        sessionId = authen.GenerateNewToken(req.headers.token)
+        var query = "SELECT user_name FROM daphne.metadata_tool_users WHERE user_token = '" +req.headers.token + "'"
+        try 
+        {
+            var con = dbCon.handleDisconnect()
+            con.query(query, function (err, result) {
+                if (err) {
+                    console.log(err)
+                    con.end()
+                    return res.json(err);
+                }
+                if (result[0] === undefined ) {
+                    con.end()
+                    res.status(200)
+                    return res.json(-1004);
+                } 
+                else {
+                    con.end()
+                    res.status(200)
+                    return res.json
+                    (
+                        {
+                            "routing_link":"metadatatool/"+result[0].user_name,
+                            "session_id": sessionId
+                        }
+                    )
+                }
+            })
+        }
+        catch (error) 
+        {   
+            con.end()
+            return res.json(error);
+        }
+    } else {
+        res.status(404)
+        return res.json(-1003);
+    }
+}
+
+
+function CreateRecommendedMD(req,res) {
+    if (req.headers.token === "317db886-f583-4050-8f85-16650bcdba21") {
+        try 
+        {
+            if (!req.body.schema_name || !req.body.schema_version || !req.body.schema_description ) {
+                res.status(404)
+                return res.json(-1003) 
+            }
+
+            MongoCreateRecommendedMetadataSchema(req.body.schema_name, req.body.schema_version,req.body.schema_description)
+            .then(md => {
+                res.status(200)
+                return res.json(md)
+            })
+
+            
+        }
+        catch (error) 
+        {   
+            return res.json(error);
+        } 
     } else {
         res.status(405)
 
@@ -194,9 +215,8 @@ function AddRecommendedMDItem(req,res) {
 
 module.exports = 
 { 
-    GetMDByItemId, 
-    AddMDItem,
-    DeleteMDItem,
+    AuthenticateUser,
     CreateRecommendedMD,
-    AddRecommendedMDItem
+    AddRecommendedMDItem,
+    GetRecommendedMDSchemas
 };

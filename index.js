@@ -27,6 +27,10 @@ const gRouters = require("./routers/general.routers")
 
 const sampMDRouters = require("./routers/lsmd.routers")
 
+// METADATA TOOL 
+
+const mdtRouters = require("./routers/metadata-tool.routers")
+
 
 app.use(userRouters)
 app.use(datasetsRouters)
@@ -40,6 +44,8 @@ app.use(linkRouters)
 app.use(gRouters)
 
 app.use(sampMDRouters)
+
+app.use(mdtRouters)
 
 
 
