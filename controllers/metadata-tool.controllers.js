@@ -158,18 +158,19 @@ function AuthenticateUser(req,res) {
 
 
 function CreateRecommendedMD(req,res) {
+
     if (req.headers.token === "317db886-f583-4050-8f85-16650bcdba21") {
         try 
         {
-            if (!req.body.schema_name || !req.body.schema_version || !req.body.schema_description ) {
+            if (!req.body.schema_title || !req.body.schema_version || !req.body.schema_description ) {
                 res.status(404)
                 return res.json(-1003) 
             }
 
-            MongoCreateRecommendedMetadataSchema(req.body.schema_name, req.body.schema_version,req.body.schema_description)
+            MongoCreateRecommendedMetadataSchema(req.body.schema_title, req.body.schema_version,req.body.schema_description)
             .then(md => {
                 res.status(200)
-                return res.json(md)
+                return res.json(md.acknowledged)
             })
 
             
@@ -194,7 +195,7 @@ function AddRecommendedMDItem(req,res) {
         {
             console.log(req.body.new_item);
             
-            MongoPushRecommendedMetadataItem("sample","v1.0", req.body.new_item)
+            MongoPushRecommendedMetadataItem(req.headers.schema_title,req.headers.schema_version, req.body.new_item)
             .then(md => {
                 res.status(200)
                  return res.json(md)
