@@ -36,7 +36,7 @@ CREATE TABLE `datasets_list` (
   `dataset_facility_id` int unsigned NOT NULL,
   `owner_id` int unsigned NOT NULL,
   `project_id` int unsigned DEFAULT NULL,
-  `dataset_exp_system_id` int unsigned DEFAULT NULL,
+  `dataset_experiment_system_id` int unsigned DEFAULT NULL,
   `dataset_visibility_id` int unsigned NOT NULL,
   `method_id` int unsigned NOT NULL,
   PRIMARY KEY (`dataset_id`),

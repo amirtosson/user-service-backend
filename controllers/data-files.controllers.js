@@ -82,7 +82,7 @@ let AWSBucketStorage = multerS3({
 
 function GetDataFilessByUserId(req,res) {
     var query = "SELECT data_files_list.*, DATE_FORMAT(data_files_list.data_file_added_on, '%d.%m.%Y') as 'data_file_added_on', "+ 
-    "experiments_list.experiment_name,experiments_list.experiment_id, dataset_instances_list.dataset_instance_name, dataset_instances_list.dataset_instance_id, users.login_name  FROM daphne.data_files_list "+
+    "experiments_list.experiment_name,experiments_list.experiment_id, dataset_instances_list.dataset_instance_name, dataset_instances_list.dataset_instance_id, users.login_name  FROM data_files_list "+
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = data_files_list.data_file_linked_experiment_id" +
     " LEFT JOIN dataset_instances_list ON dataset_instances_list.dataset_instance_id = data_files_list.data_file_linked_dataset_instance_id" +
@@ -223,7 +223,7 @@ function UploadSingleFile(req,res, next)
 // function AddFileToDatabases(req,res) 
 // {    
 //     var query = "INSERT INTO datasets_list(owner_id, dataset_name, dataset_structure_name, method_id, project_id , dataset_visibility_id , dataset_filename,"
-//     + " dataset_pid, dataset_doi, dataset_sample_name, dataset_exp_system_id, dataset_facility_id, dataset_type, added_on) VALUES("
+//     + " dataset_pid, dataset_doi, dataset_sample_name, dataset_experiment_system_id, dataset_facility_id, dataset_type, added_on) VALUES("
 //     + req.body.dataset_details.owner_id                         +  ","
 //     + "\""+req.body.dataset_details.dataset_name                +  "\""+ ","
 //     + "\""+req.body.dataset_details.dataset_structure_name      +  "\""+ ","
@@ -234,7 +234,7 @@ function UploadSingleFile(req,res, next)
 //     + "\"" +req.body.dataset_details.dataset_pid                + "\""+ "," 
 //     + "\"" +req.body.dataset_details.dataset_doi                + "\""+ "," 
 //     + "\"" +req.body.dataset_details.dataset_sample_name        + "\""+ "," 
-//     + "\"" +req.body.dataset_details.dataset_exp_system_id      + "\""+ "," 
+//     + "\"" +req.body.dataset_details.dataset_experiment_system_id      + "\""+ "," 
 //     + "\"" +req.body.dataset_details.dataset_facility_id        + "\""+ "," 
 //     + "\"" +req.body.dataset_details.dataset_type        + "\""+ "," 
 

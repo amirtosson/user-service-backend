@@ -50,7 +50,7 @@ function Login(req, res) {
         );
     }
 
-    var query = `SELECT * FROM daphne_centeral.users WHERE login_name = '${req.body.user_name}' AND user_pwd = '${req.body.user_pwd }'`;
+    var query = `SELECT * FROM users WHERE login_name = '${req.body.user_name}' AND user_pwd = '${req.body.user_pwd }'`;
 
 
     try {

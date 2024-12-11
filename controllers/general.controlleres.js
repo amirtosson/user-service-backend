@@ -2,7 +2,7 @@ const dbCon = require("../config/db-connections")
 
 
 function GetFacilitiesList(req,res) {
-    var query = "SELECT * FROM daphne.facility_list "
+    var query = "SELECT * FROM facility_list "
     try 
     {
         var con = dbCon.handleDisconnect()
@@ -33,7 +33,7 @@ function GetFacilitiesList(req,res) {
 }
 
 function GetMethodsList(req,res) {
-    var query = "SELECT * FROM daphne.methods_list "
+    var query = "SELECT * FROM methods_list "
     try 
     {
         var con = dbCon.handleDisconnect()

@@ -7,13 +7,13 @@ function CreateExperimentToSampleLink(req,res) {
     var parent_key;
     if (req.body.link_parent == "sampletoexp") {
          parent_key = "link_sample_id"
-         q_insersion = "INSERT INTO link_exp_samples(link_sample_id, link_sample_name, link_exp_id, link_exp_name) VALUES"
+         q_insersion = "INSERT INTO link_experiments_samples(link_sample_id, link_sample_name, link_experiment_id, link_experiment_name) VALUES"
      } else {
-         parent_key = "link_exp_id"
-         q_insersion = "INSERT INTO link_exp_samples(link_exp_id, link_exp_name, link_sample_id, link_sample_name) VALUES"
+         parent_key = "link_experiment_id"
+         q_insersion = "INSERT INTO link_experiments_samples(link_experiment_id, link_experiment_name, link_sample_id, link_sample_name) VALUES"
      }    
 
-     var query_d ="DELETE FROM link_exp_samples WHERE "+parent_key + " = "+req.body.link_parent_id
+     var query_d ="DELETE FROM link_experiments_samples WHERE "+parent_key + " = "+req.body.link_parent_id
      var v_insersion = []
      if (req.body.link_child_id.length > 0) {
 
@@ -82,7 +82,7 @@ function CreateExperimentToDatasetInstanceLink(req,res) {
     if (req.body.link_parent =='exptoinstance') {
 
         if (req.body.link_child_id.length>0) {
-            query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id IN ("
+            query = "UPDATE dataset_instances_list SET dataset_instance_linked_experiment_id = ? WHERE dataset_instance_id IN ("
             for (let index = 0; index <req.body.link_child_id.length; index++) {
                 const element = req.body.link_child_id[index];
                 query = query + element +","
@@ -91,13 +91,13 @@ function CreateExperimentToDatasetInstanceLink(req,res) {
             
         }
         else{
-            query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = -1 WHERE dataset_instance_linked_exp_id =?" 
+            query = "UPDATE dataset_instances_list SET dataset_instance_linked_experiment_id = -1 WHERE dataset_instance_linked_experiment_id =?" 
         }
         values = [ req.body.link_parent_id]
        
         
     } else {
-        query = "UPDATE dataset_instances_list SET dataset_instance_linked_exp_id = ? WHERE dataset_instance_id = ?"
+        query = "UPDATE dataset_instances_list SET dataset_instance_linked_experiment_id = ? WHERE dataset_instance_id = ?"
         values = [req.body.link_child_id[0], req.body.link_parent_id]
     }
 
@@ -131,7 +131,7 @@ function CreateExperimentToDatasetInstanceLink(req,res) {
 
 function CreateDatasetInstanceToFataFileLink(req,res) {
     var query = "UPDATE data_files_list SET data_file_linked_dataset_instance_id = ?, data_file_linked_experiment_id = "+ 
-    "(SELECT dataset_instances_list.dataset_instance_linked_exp_id FROM daphne.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
+    "(SELECT dataset_instances_list.dataset_instance_linked_experiment_id FROM daphne.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
     " WHERE data_files_list.data_file_id = ?"
     var values = req.body.link_parent =='instancetofile' ? [req.body.link_parent_id, req.body.link_parent_id, req.body.link_child_id[0]]:[req.body.link_child_id[0], req.body.link_child_id[0], req.body.link_parent_id]
     try {

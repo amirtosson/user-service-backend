@@ -34,7 +34,7 @@ CREATE TABLE `dataset_instances_list` (
   `dataset_instance_id` int unsigned NOT NULL AUTO_INCREMENT,
   `dataset_instance_name` varchar(150) NOT NULL,
   `dataset_instance_added_on` date NOT NULL,
-  `dataset_instance_linked_exp_id` int unsigned DEFAULT NULL,
+  `dataset_instance_linked_experiment_id` int unsigned DEFAULT NULL,
   `dataset_instance_owner_id` int unsigned NOT NULL,
   `dataset_instance_last_modified_on` date DEFAULT NULL,
   PRIMARY KEY (`dataset_instance_id`),

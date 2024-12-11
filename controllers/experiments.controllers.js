@@ -19,10 +19,10 @@ function GetExperimentsByUserId(req,res) {
     var query = "SELECT experiments_list.*, facility_list.*, DATE_FORMAT(experiments_list.experiment_added_on, '%d.%m.%Y') as 'experiment_added_on', "+
     " DATE_FORMAT(experiments_list.experiment_start_date, '%d.%m.%Y') as 'experiment_start_date', "+
     " DATE_FORMAT(experiments_list.experiment_end_date, '%d.%m.%Y') as 'experiment_end_date', "+
-    " users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
+    " users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM experiments_list "+
     " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
-    "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
+    "LEFT JOIN link_experiments_samples ON link_experiments_samples.link_experiment_id = experiments_list.experiment_id "+
     "WHERE experiment_owner_id = "+req.headers.experiment_owner_id + " group by experiment_id"
     try 
     {
@@ -130,7 +130,7 @@ function GetExperimentById(req,res) {
     " users.login_name, GROUP_CONCAT(DISTINCT link_sample_id,'**n**',link_sample_name SEPARATOR '-*-NN-*-') as linked_samples FROM daphne.experiments_list "+
     " INNER JOIN users ON users.user_id = experiments_list.experiment_owner_id " +
     " INNER JOIN facility_list ON facility_list.facility_id = experiments_list.experiment_facility_id " +
-    "LEFT JOIN daphne.link_exp_samples ON link_exp_samples.link_exp_id = experiments_list.experiment_id "+
+    "LEFT JOIN daphne.link_experiments_samples ON link_experiments_samples.link_experiment_id = experiments_list.experiment_id "+
     "WHERE experiment_id in ("+req.headers.object_id + ") group by experiment_id"
     try 
     {
