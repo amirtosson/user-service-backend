@@ -50,8 +50,9 @@ function Login(req, res) {
         );
     }
 
-    var query = "SELECT * FROM users INNER JOIN group_list ON users.working_group_id = group_list.group_id INNER JOIN roles_list ON users.user_role_id = roles_list.role_id WHERE login_name = " + "\"" + req.body.user_name + "\"" +
-        " AND user_pwd = " + "\"" + req.body.user_pwd + "\""
+    var query = `SELECT * FROM daphne_centeral.users WHERE login_name = '${req.body.user_name}' AND user_pwd = '${req.body.user_pwd }'`;
+
+
     try {
         var con = dbCon.handleDisconnect()
         con.query(query, function (err, result,) {
