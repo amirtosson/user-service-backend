@@ -117,7 +117,7 @@ function GetRecommendedMDSchemas(req,res) {
 function AuthenticateUser(req,res) {
     if (req.headers.token) {
         sessionId = authen.GenerateNewToken(req.headers.token)
-        var query = "SELECT user_name FROM daphne.metadata_tool_users WHERE user_token = '" +req.headers.token + "'"
+        var query = "SELECT user_name FROM metadata_tool_users WHERE user_token = '" +req.headers.token + "'"
         try 
         {
             var con = dbCon.handleDisconnect()
@@ -125,7 +125,7 @@ function AuthenticateUser(req,res) {
                 if (err) {
                     console.log(err)
                     con.end()
-                    return res.json(err);
+                    return res.json(-1004);
                 }
                 if (result[0] === undefined ) {
                     con.end()
