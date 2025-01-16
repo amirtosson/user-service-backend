@@ -91,87 +91,87 @@ async function SendMSG_v2(user_msg, model_id) {
 
 
 
-        const auth_google = new google.auth.GoogleAuth({
-            keyFile: "atgapis1-be439365546b.json",
-            scopes: "https://www.googleapis.com/auth/documents",
-        })
-        const client_google = await auth_google.getClient();
+        // const auth_google = new google.auth.GoogleAuth({
+        //     keyFile: "atgapis1-be439365546b.json",
+        //     scopes: "https://www.googleapis.com/auth/documents",
+        // })
+        // const client_google = await auth_google.getClient();
 
-        const googleDocs = google.docs({ version: "v1", auth: client_google });
+        // const googleDocs = google.docs({ version: "v1", auth: client_google });
 
-        documentId = "1qNrugwHaRfyJCJVyULcpEwjL4bPscVU-2s15ntaO1OY"
+        // documentId = "1qNrugwHaRfyJCJVyULcpEwjL4bPscVU-2s15ntaO1OY"
 
-        const title_text = `\nuser msg:\n`
+        // const title_text = `\nuser msg:\n`
 
-        const text_requests = {
-            requests: [
-                {
-                    insertText: {
-                        endOfSegmentLocation: {},
-                        text: title_text
-                    }
-                },
-                {
-                    insertText: {
-                        endOfSegmentLocation: {},
-                        text: `\nuser msg:\n`
-                    }
-                },
-                {
-                    updateTextStyle:
-                    {
-                        range:
-                        {
-                            segmentId: '',
-                            startIndex: 4,
-                            endIndex: 4 + title_text.length
-                        },
-                        textStyle:
-                        {
-                            bold: true,
-                        },
-                        fields: 'bold',
-                    }
-                }
+        // const text_requests = {
+        //     requests: [
+        //         {
+        //             insertText: {
+        //                 endOfSegmentLocation: {},
+        //                 text: title_text
+        //             }
+        //         },
+        //         {
+        //             insertText: {
+        //                 endOfSegmentLocation: {},
+        //                 text: `\nuser msg:\n`
+        //             }
+        //         },
+        //         {
+        //             updateTextStyle:
+        //             {
+        //                 range:
+        //                 {
+        //                     segmentId: '',
+        //                     startIndex: 4,
+        //                     endIndex: 4 + title_text.length
+        //                 },
+        //                 textStyle:
+        //                 {
+        //                     bold: true,
+        //                 },
+        //                 fields: 'bold',
+        //             }
+        //         }
 
-            ]
-        };
+        //     ]
+        // };
 
 
-        const md_res = await googleDocs.documents.batchUpdate({
-            auth: auth_google,
-            documentId: documentId,
-            requestBody://text_requests
-            {
-                requests: [
-                    {
-                        insertText: {
-                            endOfSegmentLocation: {},
-                            text: `\nuser msg:\n`,
-                        }
-                    },
-                    {
-                        insertText: {
-                            endOfSegmentLocation: {},
-                            text: `\n${user_msg} \n`
-                        }
-                    },
-                    {
-                        insertText: {
-                            endOfSegmentLocation: {},
-                            text: `\ngpt answer:\n`
-                        }
-                    },
-                    {
-                        insertText: {
-                            endOfSegmentLocation: {},
-                            text: `${response_in_text}\n`
-                        }
-                    }
+        // const md_res = await googleDocs.documents.batchUpdate({
+        //     auth: auth_google,
+        //     documentId: documentId,
+        //     requestBody://text_requests
+        //     {
+        //         requests: [
+        //             {
+        //                 insertText: {
+        //                     endOfSegmentLocation: {},
+        //                     text: `\nuser msg:\n`,
+        //                 }
+        //             },
+        //             {
+        //                 insertText: {
+        //                     endOfSegmentLocation: {},
+        //                     text: `\n${user_msg} \n`
+        //                 }
+        //             },
+        //             {
+        //                 insertText: {
+        //                     endOfSegmentLocation: {},
+        //                     text: `\ngpt answer:\n`
+        //                 }
+        //             },
+        //             {
+        //                 insertText: {
+        //                     endOfSegmentLocation: {},
+        //                     text: `${response_in_text}\n`
+        //                 }
+        //             }
 
-                ]
-            }
-        });
+        //         ]
+        //     }
+        // });
 
 
 
