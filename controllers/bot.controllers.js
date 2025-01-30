@@ -5,6 +5,21 @@ const { auth } = require("googleapis/build/src/apis/abusiveexperiencereport");
 const { CohereClientV2 } = require('cohere-ai');
 const Anthropic = require('@anthropic-ai/sdk');
 const fetch = require('node-fetch');
+const fs = require("fs");
+const pdf = require("pdf-parse");
+
+
+async function extractTextFromPDF(req, res) {
+
+    const dataBuffer = fs.readFileSync(req.file.path);
+    const data = await pdf(dataBuffer);
+    const summary = await cohereCompletion("please summarize this text: "+ data.text)
+    return res.json(
+        {
+            "answer": summary
+        }
+    );
+}
 
 
 async function gptCompletion(msg) {
@@ -34,24 +49,6 @@ async function cohereCompletion(msg) {
     });
     return completion.message.content[0].text;
 }
-
-async function claudeCompletionLegacy(msg){
-    
-    const anthropic = new Anthropic.Client(
-        process.env.CLAUDIA_KEY,
-    {
-        apiUrl:"https://api.anthropic.com"
-    });
-	  console.log(anthropic)
-    const completion = await anthropic.complete({
-      max_tokens_to_sample: 1024,
-      prompt:msg,
-      model: 'claude-3-5-sonnet-20241022',
-    });
-  
-    console.log(completion);
-	return completion.content;
-  }
 
   async function claudeCompletion(msg){
     const apiKey = process.env.CLAUDIA_KEY;
@@ -233,5 +230,6 @@ function getModelsList(req, res) {
 module.exports =
 {
     SendMSG,
-    getModelsList
+    getModelsList,
+    extractTextFromPDF
 };
