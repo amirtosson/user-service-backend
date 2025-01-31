@@ -86,7 +86,7 @@ function GetDataFilessByUserId(req,res) {
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = data_files_list.data_file_linked_experiment_id" +
     " LEFT JOIN dataset_instances_list ON dataset_instances_list.dataset_instance_id = data_files_list.data_file_linked_dataset_instance_id" +
-    " WHERE data_file_owner_id = " +req.headers.files_owner_id;
+    " WHERE data_file_owner_id = " +req.headers.owner_id;
     try 
     {
         var con = dbCon.handleDisconnect()
@@ -120,9 +120,10 @@ function GetDataFilessByUserId(req,res) {
 
 
 function GetDataFileById(req,res) {
+    console.log(req.headers.object_id)
     var query = "SELECT data_files_list.*, experiments_list.experiment_name,experiments_list.experiment_id, users.login_name, "+
     " DATE_FORMAT(data_files_list.data_file_added_on, '%d.%m.%Y') as 'data_file_added_on', "+
-    " dataset_instances_list.dataset_instance_id, dataset_instances_list.dataset_instance_name FROM daphne.data_files_list "+
+    " dataset_instances_list.dataset_instance_id, dataset_instances_list.dataset_instance_name FROM daphne_centeral.data_files_list "+
     " INNER JOIN users ON users.user_id = data_files_list.data_file_owner_id " +
     " LEFT JOIN experiments_list ON experiments_list.experiment_id = data_files_list.data_file_linked_experiment_id" +
     " LEFT JOIN dataset_instances_list ON dataset_instances_list.dataset_instance_id = data_files_list.data_file_linked_dataset_instance_id" +
@@ -172,7 +173,7 @@ function UploadSingleFile(req,res, next)
     };
      s3.getSignedUrl('putObject', params, function (err, url) {
          PID = url.split('?')[0]
-        var query = "INSERT INTO daphne.data_files_list (data_file_name, data_file_owner_id, data_file_doi, data_file_linked_dataset_instance_id, data_file_linked_experiment_id, data_file_pid, data_file_added_on)"    
+        var query = "INSERT INTO daphne_centeral.data_files_list (data_file_name, data_file_owner_id, data_file_doi, data_file_linked_dataset_instance_id, data_file_linked_experiment_id, data_file_pid, data_file_added_on)"    
             + " VALUES(?,?,?,?,?,?, now())"
 
         var values = [req.body.file_name, 

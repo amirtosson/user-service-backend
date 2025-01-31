@@ -131,7 +131,7 @@ function CreateExperimentToDatasetInstanceLink(req,res) {
 
 function CreateDatasetInstanceToFataFileLink(req,res) {
     var query = "UPDATE data_files_list SET data_file_linked_dataset_instance_id = ?, data_file_linked_experiment_id = "+ 
-    "(SELECT dataset_instances_list.dataset_instance_linked_experiment_id FROM daphne.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
+    "(SELECT dataset_instances_list.dataset_instance_linked_experiment_id FROM daphne_centeral.dataset_instances_list WHERE dataset_instances_list.dataset_instance_id = ?)" +
     " WHERE data_files_list.data_file_id = ?"
     var values = req.body.link_parent =='instancetofile' ? [req.body.link_parent_id, req.body.link_parent_id, req.body.link_child_id[0]]:[req.body.link_child_id[0], req.body.link_child_id[0], req.body.link_parent_id]
     try {

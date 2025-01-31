@@ -33,7 +33,7 @@ function CreateExperimentLabBook(req, res) {
 }
 
 function GetLabBookListByID(req, res) {
-    var query = "SELECT * FROM daphne.eln_list" + " INNER JOIN users ON users.user_id = eln_list.eln_owner_id " +
+    var query = "SELECT * FROM eln_list" + " INNER JOIN users ON users.user_id = eln_list.eln_owner_id " +
         " WHERE eln_owner_id = " + "\"" + req.headers.eln_owner_id + "\"" + ";"
     try {
         var con = dbCon.handleDisconnect()
@@ -63,7 +63,7 @@ function GetLabBookListByID(req, res) {
 function UpdateLabBookListByDOI(req, res) {
 
     var dataELN = JSON.stringify(req.body.eln_data)
-    var query = "UPDATE daphne.eln_list" +
+    var query = "UPDATE eln_list" +
         " SET eln_data = ? , eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
     var values = [dataELN, req.body.eln_name, req.body.eln_doi]
     try {
@@ -96,7 +96,7 @@ function UpdateLabBookListByDOI(req, res) {
 }
 
 function UpdateLabBookListTitleByDOI(req, res) {
-    var query = "UPDATE daphne.eln_list" +
+    var query = "UPDATE eln_list" +
         " SET eln_name = ? , eln_last_modified_on = now() WHERE eln_doi = ?;"
     var values = [req.body.eln_name, req.body.eln_doi]
     try {
@@ -129,7 +129,7 @@ function UpdateLabBookListTitleByDOI(req, res) {
 }
 
 function GetLabBookLinkedDatasetsById(req, res) {
-    var query = "SELECT * FROM daphne.dataset_elns_links" +
+    var query = "SELECT * FROM dataset_elns_links" +
         " WHERE eln_id = " + req.headers.eln_id + ";"
     try {
         var con = dbCon.handleDisconnect()

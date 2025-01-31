@@ -17,7 +17,7 @@ async function MongoAddSample(sample_id, sample_doi) {
 // ============================== Main Functions ==============================
 
 function GetSamplesByUserId(req,res) {
-    var query = "SELECT samples_list.*,  DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , users.login_name, GROUP_CONCAT(DISTINCT link_experiment_id,'**n**',link_experiment_name SEPARATOR '-*-NN-*-') as linked_exps FROM samples_list "+
+    var query = "SELECT samples_list.*,  DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , users.login_name, GROUP_CONCAT(DISTINCT link_experiment_id,'**n**',link_experiment_name SEPARATOR '-*-NN-*-') as linked_experiments FROM samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
     "LEFT JOIN link_experiments_samples ON link_experiments_samples.link_sample_id = samples_list.sample_id "+
     "WHERE sample_owner_id = "+req.headers.sample_owner_id + " group by sample_id"
@@ -43,17 +43,17 @@ function GetSamplesByUserId(req,res) {
             else { 
                 for (let index = 0; index < result.length; index++) 
                 {
-                    if (result[index].linked_exps ===null) continue;
-                    result[index].linked_exps_names = []
-                    result[index].linked_exps_ids = []
-                    var le = result[index].linked_exps.split("-*-NN-*-")
+                    if (result[index].linked_experiments ===null) continue;
+                    result[index].linked_experiments_names = []
+                    result[index].linked_experiments_ids = []
+                    var le = result[index].linked_experiments.split("-*-NN-*-")
                     for (let str_index = 0; str_index < le.length; str_index++) 
                     {
                         const element = le[str_index];
                         var e = element.split("**n**")
-                        result[index].linked_exps_ids.push(e[0]) 
+                        result[index].linked_experiments_ids.push(e[0]) 
                     
-                        result[index].linked_exps_names.push(e[1])
+                        result[index].linked_experiments_names.push(e[1])
                     }
                 }
                 con.end()
@@ -120,7 +120,7 @@ function CreateSample(req,res) {
     if(req.body.link){
          query_links = "INSERT INTO link_experiments_samples (link_experiment_id, link_sample_id, link_experiment_name, link_sample_name)" +
         " SELECT ? AS link_experiment_id, ? AS link_sample_id, experiment_name AS link_experiment_name, ? AS link_sample_name" +
-        " FROM daphne.experiments_list WHERE experiment_id = ?"  
+        " FROM daphne_centeral.experiments_list WHERE experiment_id = ?"  
     }
 
 
@@ -172,9 +172,9 @@ function CreateSample(req,res) {
 
 function GetSampleById(req,res) {
     if(!req.headers.object_id || req.headers.object_id.length<1)  return res.json([])
-    var query = "SELECT *, DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , GROUP_CONCAT(DISTINCT link_experiment_id,'**n**',link_experiment_name SEPARATOR '-*-NN-*-') as linked_experiments FROM daphne.samples_list "+
+    var query = "SELECT samples_list.*, DATE_FORMAT(samples_list.sample_added_on, '%d.%m.%Y') as 'sample_added_on' , GROUP_CONCAT(DISTINCT link_experiment_id,'**n**',link_experiment_name SEPARATOR '-*-NN-*-') as linked_experiments FROM daphne_centeral.samples_list "+
     " INNER JOIN users ON users.user_id = samples_list.sample_owner_id " +
-    "LEFT JOIN daphne.link_experiments_samples ON link_experiments_samples.link_sample_id = samples_list.sample_id "+
+    "LEFT JOIN daphne_centeral.link_experiments_samples ON link_experiments_samples.link_sample_id = samples_list.sample_id "+
     "WHERE sample_id in ("+req.headers.object_id+") group by sample_id"
 
     try 

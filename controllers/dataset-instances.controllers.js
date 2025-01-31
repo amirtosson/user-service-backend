@@ -14,7 +14,7 @@ async function MongoAddInstance(dataset_instance_id) {
 // ============================== Main Functions ==============================
 
 function GetDatasetInstancesByUserIdAndExperimentId(req,res) {
-    var query = "SELECT dataset_instances_list.*, users.login_name FROM daphne.dataset_instances_list "+
+    var query = "SELECT dataset_instances_list.*, users.login_name FROM daphne_centeral.dataset_instances_list "+
     " INNER JOIN users ON users.user_id = dataset_instances_list.dataset_instance_owner_id " +
     "WHERE dataset_instance_owner_id = "+req.headers.dataset_instance_owner_id+
     " AND dataset_instance_linked_experiment_id = "+req.headers.linked_experiment_id

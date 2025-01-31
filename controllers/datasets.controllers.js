@@ -80,7 +80,7 @@ let AWSBucketStorage = multerS3({
 // ====================================== Main APIS========================================
 
 function GetDatasetsByUserId(req,res) {
-    var query = "SELECT * FROM daphne.datasets_list "+
+    var query = "SELECT * FROM datasets_list "+
     " INNER JOIN methods_list ON datasets_list.method_id = methods_list.method_id" +
     " INNER JOIN facility_list ON datasets_list.dataset_facility_id = facility_list.facility_id" +
     " INNER JOIN users ON users.user_id = datasets_list.owner_id " +

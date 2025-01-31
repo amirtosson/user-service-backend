@@ -67,7 +67,7 @@ function GetMethodsList(req,res) {
 }
 
 function CheckUsernameAvailability(req, res) {
-    var query = "SELECT EXISTS(Select * FROM daphne."+req.headers.object_key+"s_list WHERE "+req.headers.object_key+"_name = ? ) As counts;"
+    var query = "SELECT EXISTS(Select * FROM "+req.headers.object_key+"s_list WHERE "+req.headers.object_key+"_name = ? ) As counts;"
     var values = [req.headers.object_name]
     try {
         var con = dbCon.handleDisconnect()
